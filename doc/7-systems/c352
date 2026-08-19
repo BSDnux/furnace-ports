@@ -1,0 +1,31 @@
+# Namco C352
+
+Namco C is a -hanel quadraphonic PCM sound chipmanufactured jointly by Fujitsu and Namco. it was first used in Namco System 2 arcade family starting in 1987.                                                                              
+this chip features:
+
+- stereo soft panning
+- accepts either 8-bit linear PCM or proprietary 8-bit µ-law compressed PCM samples
+
+  
+## effects
+
+- `11xx`: **set noise mode.**
+- `12xy`: **set invert mode.**
+  - if `x` is 1 or higher, surround is enabled.
+  - if `y` is 1 or higher, invert is enabled.
+
+## info
+
+this chip uses the [C352](../4-instrument/c352.md) instrument editor.
+
+maximum sample length is 131072, and loop start and end points must be even numbers.
+
+## chip config
+
+  the following options are avaible in the Chip Manager window:
+- **Banking style**: change the sample bank scheme. used for VGM export.
+  - Namco System 11: 512KB available for samples. 
+  - Namco ND-1 and EVA: 2MB available for samples.
+  - Namco NB-1/2 and FL: 4MB available for samples.
+  - Namco System 12: 8MB available for samples.
+  - Namco System 12/22/23 and ES6000: 16MB available for samples.
