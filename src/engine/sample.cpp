@@ -446,8 +446,8 @@ int DivSample::getEndPosition(DivSampleDepth depth) {
     case DIV_SAMPLE_DEPTH_16BIT:
       off=length16;
       break;
-    case DIV_SAMPLE_DEPTH_C352;
-      off=length_C352;
+    case DIV_SAMPLE_DEPTH_C352:
+      off=lengthC352;
       break;
     default:
       break;
@@ -1622,6 +1622,7 @@ void DivSample::render(unsigned int formatMask) {
         data12[j+2]=0;
       }
     }
+  }
   if (NOT_IN_FORMAT(DIV_SAMPLE_DEPTH_C352)) { // C352
     if (!initInternal(DIV_SAMPLE_DEPTH_C352,samples)) return;
     for (unsigned int i=0; i<samples; i++) {
@@ -1681,7 +1682,7 @@ void* DivSample::getCurBuf() {
       return data4;
     case DIV_SAMPLE_DEPTH_16BIT:
       return data16;
-    case DIV_SAMPLE_DEPTH_C352;
+    case DIV_SAMPLE_DEPTH_C352:
       return dataC352;
     default:
       return NULL;
@@ -1723,11 +1724,13 @@ unsigned int DivSample::getCurBufLen() {
       return length4;
     case DIV_SAMPLE_DEPTH_16BIT:
       return length16;
-    case DIV_SAMPLE_DEPTH_C352;
-     return lengthC352
+    case DIV_SAMPLE_DEPTH_C352:
+     return lengthC352;
     default:
       return 0;
-  }
+    case DIV_SAMPLE_DEPTH_MAX:
+      break;
+    }
   return 0;
 }
 

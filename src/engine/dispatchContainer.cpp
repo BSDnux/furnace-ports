@@ -792,7 +792,7 @@ void DivDispatchContainer::init(DivSystem sys, DivEngine* eng, int chanCount, do
     case DIV_SYSTEM_MULTIPCM:
       dispatch=new DivPlatformMultiPCM;
       break;
-    case DIV_SYSTEM_C352;
+    case DIV_SYSTEM_C352:
      dispatch=new DivPlatformC352;
      break;
     case DIV_SYSTEM_DUMMY:

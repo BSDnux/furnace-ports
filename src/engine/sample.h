@@ -50,7 +50,7 @@ enum DivSampleDepth: unsigned char {
   DIV_SAMPLE_DEPTH_12BIT=14,
   DIV_SAMPLE_DEPTH_4BIT=15,
   DIV_SAMPLE_DEPTH_16BIT=16,
-  DIV_SAMPLE_DEPTH_C352=17
+  DIV_SAMPLE_DEPTH_C352=17,
   DIV_SAMPLE_DEPTH_MAX // boundary for sample depth
 };
 
@@ -382,7 +382,7 @@ struct DivSample {
     lengthIMA(0),
     length12(0),
     length4(0),
-    lengthC352(0)
+    lengthC352(0),
     samples(0) {
     for (int i=0; i<DIV_MAX_CHIPS; i++) {
       for (int j=0; j<DIV_MAX_SAMPLE_TYPE; j++) {
