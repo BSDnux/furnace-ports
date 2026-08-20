@@ -25,7 +25,7 @@
 #include "../../fixedQueue.h"
 
 class DivPlatformC352: public DivDispatch {
-  struct Channel : public SharedChannel<int> {
+  struct Channel : public SharedChannel {
     DivMacroInt std;
     unsigned int audPos;
     int sample, wave;
@@ -34,8 +34,8 @@ class DivPlatformC352: public DivDispatch {
     int chVolL, chVolR;
     int macroVolMul;
     int macroPanMul;
-    Channel(bool linear = true) :
-      SharedChannel<int>(255),
+    Channel(bool linear=true) :
+      SharedChannel(255,linear),
       std(),
       audPos(0),
       sample(-1),
@@ -59,6 +59,7 @@ class DivPlatformC352: public DivDispatch {
   bool isMuted[32];
   unsigned int* sampleOff;
   bool* sampleLoaded;
+  DivPitchTableManager samplePitchTable;
   int totalChans;
   unsigned char groupBank[4];
   unsigned char bankType;
@@ -73,11 +74,8 @@ class DivPlatformC352: public DivDispatch {
     QueuedWrite(unsigned short a, unsigned char v): addr(a), val(v), addrOrVal(false) {}
   };
   FixedQueue<QueuedWrite,2048> writes;
-  
   // NOTE: This instantiates the core chip state struct layout
-  struct c352_t;
-  c352_t* c352;
-  
+  struct c352_t c352;
   DivMemoryComposition memCompo;
   unsigned char regPool[512];
   char bankLabel[4][4];
@@ -89,7 +87,7 @@ class DivPlatformC352: public DivDispatch {
   public:
     void acquire(short** buf, size_t len);
     int dispatch(DivCommand c);
-    void* getChanState(int chan) override;
+    SharedChannel* getChanState(int chan);
     DivMacroInt* getChanMacroInt(int ch);
     unsigned short getPan(int chan);
     void getPaired(int ch, std::vector<DivChannelPair>& ret);
@@ -106,6 +104,7 @@ class DivPlatformC352: public DivDispatch {
     void notifyInsChange(int ins);
     void notifyWaveChange(int wave);
     void notifyInsDeletion(void* ins);
+    void notifyPitchTable(int sample=-1);
     void poke(unsigned int addr, unsigned short val);
     void poke(std::vector<DivRegWrite>& wlist);
     const char** getRegisterSheet();
