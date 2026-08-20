@@ -10,11 +10,10 @@
 
 #include <stdint.h>
 
+#define C352_VOICES 32
 #ifdef __cplusplus
 extern "C"
 {
-#define C352_VOICES 32
-
 #endif
 
 enum {
@@ -22,10 +21,10 @@ enum {
     C352_VOL_REAR   = 1,
     C352_FREQUENCY  = 2,
     C352_FLAGS      = 3,
-    C352_WAVE_BANK  = 4,
-    C352_WAVE_START = 5,
-    C352_WAVE_END   = 6,
-    C352_WAVE_LOOP  = 7,
+    C352_sample_BANK  = 4,
+    C352_sample_START = 5,
+    C352_sample_END   = 6,
+    C352_sample_LOOP  = 7,
 };
 
 enum {
@@ -67,14 +66,22 @@ typedef struct c352_voice_t {
 
     uint16_t vol_f;
     uint16_t vol_r;
+    uint16_t muted;
+
+    uint16_t lout;
+    uint16_t rout;
+    uint16_t rlout;
+    uint16_t rrout;
+
+    uint16_t inv_lout;
 
     uint16_t freq;
     uint16_t flags;
 
-    uint16_t wave_bank;
-    uint16_t wave_start;
-    uint16_t wave_end;
-    uint16_t wave_loop;
+    uint16_t sample_bank;
+    uint16_t sample_start;
+    uint16_t sample_end;
+    uint16_t sample_loop;
 
 } C352_Voice;
 
@@ -82,14 +89,19 @@ typedef struct c352_t {
 
     uint32_t rate;
 
-    C352_Voice v[C352_VOICES];
+    C352_Voice voice[C352_VOICES];
     double out[4];
 
     uint16_t control1; // unknown purpose for both
     uint16_t control2;
 
-    uint8_t* wave;
-    uint32_t wave_mask;
+    uint8_t* sample_mem;
+    uint32_t sample_mask;
+
+    uint16_t lout;
+    uint16_t rout;
+    uint16_t rlout;
+    uint16_t rrout;
 
     uint16_t random;
 
@@ -103,17 +115,23 @@ typedef struct c352_t {
 
 } C352;
 
-int C352_init(C352 *c,uint32_t clk);
-void C352_set_mulaw_type(C352 *c,int mulaw_type);
+int c352_init(C352 *c,uint32_t clk);
+void c352_set_mulaw_type(C352 *c,int mulaw_type);
 
+void c352_tick(C352 *c, int cycle);
 // run this at the rate specified in C352_rate (hz)
-void C352_update(C352 *c);
+void c352_update(C352 *c);
 
-void C352_write(C352 *c, uint16_t addr, uint16_t data);
-uint16_t C352_read(C352 *c, uint16_t addr);
+void c352_write(C352 *c, uint16_t addr, uint16_t data);
+uint16_t c352_read(C352 *c, uint16_t addr);
+
+void c352_reset (C352 *c, uint16_t addr);
+
+void c352_bank_type (C352 *c, uint16_t type);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
 #endif // C352_H_INCLUDED
+
