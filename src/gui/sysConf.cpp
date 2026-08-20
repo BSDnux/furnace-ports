@@ -2941,6 +2941,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
         });
       }
       break;
+     }
     case DIV_SYSTEM_VIC20: {
       bool sysPal=flags.getInt("clockSel",0);
       bool filterOff=flags.getBool("filterOff",false);
