@@ -2670,18 +2670,25 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
 
       ImGui::Text(_("Banking style:"));
       ImGui::Indent();
-      if (ImGui::RadioButton(_("Namco System 2 (2MB)"),bankType==0)) {
+      if (ImGui::RadioButton(_("Namco electromechanical systems (1MB)"),bankType==0)) {
         bankType=0;
         altered=true;
         mustRender=true;
       }
-      if (ImGui::RadioButton(_("Namco System 21 (4MB)"),bankType==1)) {
+      ImGui::Text(_("Banking style:"));
+      ImGui::Indent();
+      if (ImGui::RadioButton(_("Namco System 2 (2MB)"),bankType==1)) {
         bankType=1;
         altered=true;
         mustRender=true;
       }
-      if (ImGui::RadioButton(_("Raw (16MB; no VGM export!)"),bankType==2)) {
+      if (ImGui::RadioButton(_("Namco System 21 (4MB)"),bankType==2)) {
         bankType=2;
+        altered=true;
+        mustRender=true;
+      }
+      if (ImGui::RadioButton(_("Raw (16MB; no VGM export!)"),bankType==3)) {
+        bankType=3;
         altered=true;
         mustRender=true;
       }
