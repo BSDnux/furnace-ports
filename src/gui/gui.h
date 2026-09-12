@@ -1882,6 +1882,11 @@ class FurnaceGUI {
   int pendingRawSampleDepth, pendingRawSampleChannels, pendingRawSampleRate;
   bool pendingRawSampleUnsigned, pendingRawSampleBigEndian, pendingRawSampleSwapNibbles, pendingRawSampleReplace;
 
+  // a .mid is held here while the import dialog is up. midiImportPending tells
+  // load() the options have been picked, so it doesn't bounce the file back.
+  String pendingMIDIPath;
+  bool displayMIDIImport, midiImportPending;
+
   ImGuiWindowFlags globalWinFlags;
 
   FurnaceGUIFileDialogs curFileDialog;
@@ -3075,6 +3080,7 @@ class FurnaceGUI {
 
   // speed window specific
   Uint64 lastTapTime;
+  double lastTapDelta;
   float grooveTargetBPM;
 
   // user presets window
