@@ -1,6 +1,6 @@
 # Yamaha YMF292 (SCSP)
 
-the Yamaha YMF292 (Saturn Custom Sound Processor — SCSP) is the sound chip in the Sega Saturn. it has 32 voice slots, 512 KB of dedicated sound RAM, a 128-step on-chip DSP, and runs at a fixed 44.1 kHz output rate.
+the Yamaha YMF292 (Saturn Custom Sound Processor — SCSP) is the sound chip in the Sega Saturn and its arcade systems, the Model 2A/B/C CRX, Model 3, System H1 and the Saturn's arcade cousin, the S-TV Titan Video. it has 32 voice slots, 512 KB of dedicated sound RAM, up to 2/8/16/32/48 MB of sample ROM on Sega arcade systems, a 128-step on-chip DSP, and runs at a fixed 44.1 kHz output rate.
 
 this chip features:
 
