@@ -234,3 +234,5 @@ UI／保存ゲート: C352を選択→32ch表示→8-bitとC219 sampleを割当�
 - チェックポイント a5bd354d7 のP書全文が現在のP書先頭に一致することを検証し、本文改変なしを確認。`git diff --no-index --check` で追記差分を確認。`git status --porcelain -- src CMakeLists.txt` は空。
 - Furnace本体・ビルド設定は未変更。Furnace全体ビルド、既存曲回帰、UI／保存試験は本Phaseの検証対象外で未実行。実装済み音源としてのclearedではない。
 - 実行コミットは次のPhase ID付き成果コミットと、Queue終了記録から追跡する。p002以降は未認可・未着手。
+
+- 成果コミット確定: 8fc686d32。q001はfinishedとしてhistory/q001.mdへ保存。状態同期後にmasterへfast-forward統合。
