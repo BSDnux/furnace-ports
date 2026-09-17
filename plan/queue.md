@@ -1,41 +1,23 @@
 # Queue Book
 
-- **Queue ID:** `q001`
-- **Status:** finished
-- **Timebox:** 90分
-- **Human authorization:** 2026-09-18 JST、ユーザー指示「ws001p001を実行」。既提案の90分枠・対象Phaseの実行認可。
-- **対象:** `ws001p001`
-- **依存関係:** なし
+- **Queue ID:** q002
+- **Status:** authorized
+- **Timebox:** 90分（前回と同じ枠を実行上限として採用）
+- **Human authorization:** 2026-09-18 JST「https://github.com/yosi2112/furnace ←今後ここにPushするように。つぎはP002です。」P002の実行指示として認可。
+- **対象:** ws001p002
+- **依存関係:** ws001p001 cleared (8fc686d32)
 - **Allowed Touch Points:**
-  - `plan/ws001-c352/phase001/phase.md`（Execution Logのみ、着手後）
-  - `plan/insights/index.md`（新規事実が判明した場合）
-  - `plan/ledger.md`（Queue終了時の同期）
-  - `plan/ws001-c352/tests/`（再現資産が必要な場合のみ）
-  - `plan/queue.md`、`plan/history/q001.md`、`plan/ws001-c352/ws.md`（GNA Step 6の管理・終了同期のみ）
-
-## 選定Phase
-
-### `ws001p001` — C352仕様・実装契約の確定
-
-一次資料および信頼できる既存エミュレータ実装を調査し、レジスタ、サンプル形式、アドレス／バンク、音量・パン、ループ、周波数、4系統出力、リセット・キー操作の仕様を確定する。C140/C219との差分と、Furnace APIへ落とす項目を記録し、後続Phaseの検証ベクトルを作る。
-
-## 認可後の実行境界
-
-人間の明示的な実行指示を受けた場合のみ、`run/q001` ブランチを作成してPhaseを開始する。MAME／QuattroPlayの事前調査結果は既にp001本文へ反映済みだが、Queue認可前のためp001は未実行である。認可がない間は、Furnaceコードおよび計画書の手順本文を変更しない。
-
+  - src/engine/platform/c352.cpp, c352.h
+  - src/engine/platform/sound/c352.cpp, c352.h
+  - CMakeLists.txt（C352ソースの追加）
+  - plan/ws001-c352/tests/（実行・比較・ビルド検証資産。reference原本は不変）
+  - plan/ws001-c352/phase002/phase.md（着手後はExecution Logのみ）
+  - plan/queue.md, plan/history/q002.md, plan/ledger.md, plan/ws001-c352/ws.md, plan/insights/index.md（GNA管理・状態同期）
+- **Administrative operations:** run/q002作成・検証後commit・masterへfast-forward・originの指定URLへ通常push。既存gitlinkのdependency初期化、tests/build/配下のビルド生成。
+- **Item ws001p002:** pending
 
 ## Lifecycle
-- 2026-09-18: proposed → authorized。GNA Step 6に必要なqueue.md、history/q001.md、ws.mdの状態同期を管理操作として含む。
 
-- 2026-09-18: authorized → running。Item ws001p001: in-progress。
-
-## Result
-
-- Item `ws001p001`: **cleared**。
-- Phase成果コミット: `8fc686d32`。開始チェックポイント: `a5bd354d7`。
-- 成果: MAME互換の仕様／Furnace接続契約、C140/C219との差分、公開範囲、固定参照ソースと再実行可能な検証資産。
-- Verification: `powershell -NoProfile -ExecutionPolicy Bypass -File plan/ws001-c352/tests/verify.ps1`、exit 0。MAME 330件＋QuattroPlay 8件、参照SHA-256照合、GCC警告をエラーとしてコンパイル成功。
-- 仕様表の根拠対応を目視確認、P書の既存本文を保持。Furnace本体・CMake変更なし。全体ビルド／UI／既存曲回帰は未実行（p004/p005対象）。
-- 実機のcontrol／FM／LINK等は未確定のままinsightsへ保持。実装用の互換動作は明示的に確定した。
-- 2026-09-18: running → finished。既提案90分枠内で終了。GNA規約に従いmasterへfast-forward統合する。
-- 本Q書を `plan/history/q001.md` に同一内容で保存し、以後改変しない。p002以降を自動開始しない。
+- draft → proposed: p001確定契約から対象と検証を具体化。
+- proposed → authorized: 上記ユーザー実行指示を適用。コード着手前にP書ready化。
+- system／instrument／factory／GUI登録およびVGM公開はp003以降。p002の成功をもって次Queueへ進まない。
