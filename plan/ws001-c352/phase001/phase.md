@@ -100,3 +100,137 @@ QuattroPlayも`control1`／`control2`の用途、FILTERと音量rampの関係、
 ## Execution Log
 
 未実行。MAME／QuattroPlayの調査はQueue起案前の事前調査として本文へ反映済み。Queue `q001` は`proposed`で、人間の実行認可待ち。
+
+### 2026-09-18 — q001開始
+- Status: in-progress。承認証跡: ユーザー「ws001p001を実行」。run/q001、チェックポイント a5bd354d7 で実行。本文は開始時点の記録として保存し、以下の確定契約が事前調査の留保・相違を補足する。
+- 検証コマンド（実行前定義）: `powershell -NoProfile -ExecutionPolicy Bypass -File plan/ws001-c352/tests/verify.ps1`。固定版参照のハッシュ照合、参照コードの抽出コンパイル、数値ベクトルとの比較を行う。
+
+### 確定契約 — 根拠と互換プロファイル
+
+本節はFurnace用の実装契約であり、C352実機の完全な仕様書ではない。実機測定・メーカーのデータシートによる裏付けは今回取得していない。不明点を推測で補わず、既存実装の観測可能な挙動と製品側の設計選択を区別する。
+
+| 根拠ID | 固定した資料 | 参照箇所 |
+|---|---|---|
+| M1 | [MAME c352.cpp](https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/src/devices/sound/c352.cpp) | `fetch_sample`, `sound_stream_update`, `read/write`, `device_start/reset` |
+| M2 | [MAME c352.h](https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/src/devices/sound/c352.h) | フラグ、voice構造、24-bit ROM interface |
+| M3 | [MAME namcos11.cpp](https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/src/mame/namco/namcos11.cpp) | `C352(config, "c352", 25401600, 288)`、4出力ルーティング |
+| Q1 | [QuattroPlay c352.c](https://github.com/superctr/QuattroPlay/blob/448f316945d50a5aec5d1ed9607e04b4a0a3ee9c/src/emu/c352.c) | `C352_init/write/read/update`, decoder |
+| Q2 | [QuattroPlay c352.h](https://github.com/superctr/QuattroPlay/blob/448f316945d50a5aec5d1ed9607e04b4a0a3ee9c/src/emu/c352.h) | latch、出力型、未確定コメント |
+| F1 | Furnace base `54ce9df2c`、`src/engine/platform/c140.cpp/.h`、`sound/c140_c219.c` | PCMディスパッチ、サンプル配置、C219 decoder |
+| F2 | 同base、`src/engine/sample.cpp/.h` | `c219Table[256]`、`dataC219`、depth=12 |
+| F3 | 同base、`dispatch.h`、`platform/qsound.cpp`、`engine.cpp::autoPatchbay` | 16-bit register pool、複数出力API、自動配線 |
+| F4 | 同base、`sysDef.cpp/.h`、`instrument.cpp/.h`、`dispatchContainer.cpp`、`vgmOps.cpp`、`src/gui/` | 登録・保存・GUI・VGM接続点 |
+
+原本とSHA-256は `../tests/reference/sources.json` に保存。MAMEを数値基準に採用する。QuattroPlayの異なる挙動は混ぜない。p002が別の挙動を採用する場合は、この契約を上書きせず、新しいPhase／insightで変更理由を記録する。
+
+| 差異 | MAME互換として採用 | QuattroPlayで観測した差 |
+|---|---|---|
+| フラグ | 再生中も現在のflagsを参照 | 位相・補間はKEYON時ラッチ |
+| FILTER | 補間のみ無効。rampは継続 | 更新機会に音量を即時反映 |
+| 非ループ終端 | 読み出した終端値を直ちに0にする | その時点では終端値を保持 |
+| 再KEYON | sample/last_sampleを0に初期化 | sample/last_sampleを初期化しない |
+| control | 0x200保持・読出可、0x201無視・読出0 | 両方保持、両方読出0 |
+| 出力 | 各寄与を右シフト8、合計を右シフト3、signed16へ折り返す | 未スケールのdouble加算 |
+
+この選択により本文の「Furnace側でもflagsラッチへ分離」という事前提案は採用しない。実機のcontrol、FM、LOOPTRG、LINKの意味、divider、FILTER、位相配線に関する未確定性はins005/ins007に残す。
+
+### 確定契約 — レジスタと数値処理
+
+数値は特記なき限り16進。外部APIは `write(wordAddress, uint16Data)`。レジスタ数をbyteアドレスと混同しない。内部値にバイト順はない。バイト列として保存・表示する際は明示的な変換を用いる。
+
+| ワードアドレス | 内容／契約 | 根拠 |
+|---|---|---|
+| `v*8+0`, `v*8+1` | v=0..31。front/rear volume、上位byte=L、下位byte=R、各0..255 | M1 read/write/mix |
+| `v*8+2` | freq=0..ffff、16-bit fractionへの1出力フレーム当たり加算値 | M1 mix |
+| `v*8+3` | 現在flagsを保持。readでBUSY/LDIR/LOOPHIST等も観測 | M1/M2 |
+| `v*8+4..7` | bank/start/end/loop。いずれも16-bit、ROM byteアドレスは24-bitにマスク | M1/M2 |
+| `0100..01ff` | 今回は読出0、書込無効果。内部状態のミラーは推測しない | M1 |
+| `0200` | control保持、音声への効果なし。部分書込はmask合成 | M1 |
+| `0201` | 読出0・書込無効果。QuattroPlay control2は不採用 | M1/Q1 |
+| `0202` | full-word書込だけが全voiceのKEYON/KEYOFFを実行。値は無関係、読出0 | M1 |
+| その他 | 読出0・書込無効果、配列外アクセス禁止 | M1＋ホスト安全契約 |
+
+- 発音書込順はvolume、freq、bank/start/end/loop、flags、最後に0202。複数voiceの予約後、tick末尾に0202を1回出す。同一tick内の停止→再発音は最終状態をKEYONのみとして予約し、KEYOFFを残さない。低レベルで両bitが立つ場合はMAME通りKEYOFFが勝つ。
+- KEYONはpos=`bank<<16|start`、counter=ffff、sample/last_sample/current volumes=0、BUSY=1、KEYON/LOOPHIST=0。KEYOFFはBUSY/KEYOFF=0、counter=ffff。resetは32voice/controlを0、noise seed=1234。（M1）
+- `next=counter+freq`のbit16が立つとfetchを1回、`(next^counter)&18000`が非0なら各volumeを目標へ1だけ動かす。counterは下位16-bit。freq=0はKEYON直後なら無音でfetchしない。freq=ffffも厳密には1.0倍ではない。（M1）
+- linear decodeはsigned byte×256（負数の左シフトに依存しない移植とする）。C352 μ-lawはF2の全256値と一致する。00=0、7f=31232、80=-32、ff=-31264。G.711/C140変換とは別物。`dataC219`をROMへbyte順のままコピーし、再生時にC352テーブルでdecodeする。（M1/Q1/F2）
+- FILTER=0では前回／今回サンプルをfractionで線形補間、FILTER=1では今回値。signed負数の丸めは参照結果の算術右シフト相当として再現する。各出力の寄与は`(signed sample * current volume)>>8`、32voiceをint32で合計し、`sum>>3`の下位16-bitをsigned値にする。コア段でclampに変更しない。（M1）
+- PHASEFL=0100はFL、PHASERL=0200はRL、PHASEFR=0080はFRとRRを反転。RR独立bitはない。NOISE=0010時、chip共通16-bit状態をfetchごとに `(state>>1)^((-(state&1))&fff6)` で更新し、ROMは読まない。voice走査は0→31、ミュートしても走査・noise更新は継続する。（M1、ミュートはホスト契約）
+- BUSY/KEYON/KEYOFF/LOOPHIST/LDIRは上記状態機械に従う。FM=0400、LOOPTRG=1000は保存・読出のみで音響効果未実装と明記。LINK=0020は下記参照挙動のみ、実機long-format対応を名乗らない。（M1/M2）
+
+### 確定契約 — アドレスとループ
+
+| 条件 | fetch後の処理 | 根拠 |
+|---|---|---|
+| 非ループ、pos下位16bit != end | REVERSE=0ならpos+1、1ならpos-1 | M1 |
+| 非ループ、pos下位16bit == end | BUSY解除、KEYOFF設定、sample=0。従ってstart=endの非ループは無音 | M1、数値ベクトル |
+| LOOP=1/REVERSE=0、end | 同一bankのloopへ移動、LOOPHIST設定、終端サンプルも発音 | M1 |
+| LOOP=1/REVERSE=1 | endでLDIR=1、loopでLDIR=0、変更後の向きへ1進む。端点は往復ごとに1回 | M1 |
+| LINK+LOOP、通常終端 | pos=`wave_start<<16|wave_loop`、LOOPHIST設定。REVLOOP分岐が先 | M1 |
+| bank跨ぎ | increment/decrementは位置全体に作用、ROM読出は24-bitマスク。LINKのbankにも同じマスク | M1/M2 |
+
+Furnaceサンプル配置は製品側の制約として以下に固定する。
+
+- ROM=16 MiB、1byte/サンプル、ゼロ初期化、bank=64 KiB。通常のサンプルをbank跨ぎで置かない。C219の偶数アドレス制約、`^1` byte入替、group bankは流用しない。
+- 非ループは最大65535音声byte＋ゼロguard 1byte。start=先頭、end=先頭+長さ（guard位置）。これによりMAMEの終端消去でも最後の音声byteを発音できる。1byteサンプルもstart/endを別にする。
+- forward loopはFurnaceの半開区間`[loopStart,loopEnd)`を、loop=`base+loopStart`、end=`base+loopEnd-1`へ写像。最大65536byte。範囲外loop、空サンプルは発音しない。長過ぎる／ROMに収まらないサンプルは未ロード＋警告とし、暗黙の切詰めはしない。
+- reverse単発のGUI公開は初期統合の対象外（コアとpokeでは対応）。ping-pong loopはLOOP|REVERSEで再現し、同一点ループはforwardへ正規化する。LINKの自動サンプル連結は初期対象外。これらはhardware制限ではなく、Furnace初期実装の範囲である。
+
+### 確定契約 — Furnace API／追加・再利用点
+
+| 接続箇所 | 後続Phaseの契約 | 根拠 |
+|---|---|---|
+| `platform/sound/c352.*`, `platform/c352.cpp/.h` | 新コア・新DivPlatformC352。C140/C219コアを改変せず、32 Channel/osc buffers、16-bit値のwrite queue。C140のmacro/note-map/porta実装パターンを再利用 | F1、32voice/レジスタ差 |
+| クロック | 既定25401600 Hz、divider=288固定、rate=整数除算88200 Hz。customClockも同divider。発音レートRからfreq=`clamp(round(R/rate*65536),0,65535)`。M3の構成を選ぶ製品方針で、全基板の実測値ではない | M1/M3/Q1 |
+| `getRegisterPool*`, `poke`, dumpWrites | poolはuint16[0x203]、size=0x203エントリ、depth=16。poke/dumpはワードアドレス・16-bit値を維持。部分書込はコア試験用API、通常dispatchはfull-word | F3、M1 |
+| `getOutputCount/acquire` | コア常時FL/FR/RL/RR。system flag `quadOutput=false`では2出力、L=(FL+RL)/2、R=(FR+RR)/2をint32で加算し0方向へ除算。trueでは4出力を同順序で公開。gain/postAmp=1.0 | F3、製品方針 |
+| 初期volume/pan | channel volume=255、FL/FR/RL/RR pan=255。通常PANNINGはL/R両面に適用。SURROUND_PANNINGはout=0..3で個別値0..255。volume乗算は整数`vol*pan/255` | F1、dispatch.h API、製品方針 |
+| 音量・マクロ | 新DIV_INS_C352、sample mapを使用。volume/arp/pitch/panL/panR/phaseResetをC140同等に扱う。panL/Rマクロは両面へ適用。C352 control macroは初期公開しない（NOISE/FILTER/phase/LINKはpoke試験対象） | F1/F4、公開範囲の選択 |
+| ミュート | chip状態・共通noiseは進め、対象voiceの出力寄与のみ0。oscは対象voiceの4寄与の平均、signed16範囲へclamp。空／無効sampleは停止 | M1/F1、製品方針 |
+| `sysDef.h/.cpp`, `dispatchContainer.cpp`, `CMakeLists.txt` | DIV_SYSTEM_C352を末尾へ追加、32 PCM channel、DIV_INS_C352＋AMIGA fallback。sample depth maskは8BITとC219。新ソースをビルド・生成factoryへ追加 | F4 |
+| ファイル識別子 | base時点で未使用のsystem file ID `0xe8`、instrument ID `68`を予約候補として固定。p003着手時に衝突を再検査、衝突があれば新計画へ戻す。既存IDの番号変更禁止 | F4、baseで検索確認 |
+| `instrument.h/.cpp` | enum=68、sample map/length機能フラグを有効にする。既存sample depth=12を流用し、新decoder形式IDは追加しない | F2/F4 |
+| `gui/insEdit.cpp`, `guiConst.cpp`, `gui.h`, `settings/allSettings.cpp` | PCM instrument editor、名称・色・アイコン（既存汎用PCMアイコンを再利用）、システム一覧へ追加 | F4 |
+| `gui/sysConf.cpp`, `sampleEdit.cpp`, `doAction.cpp`, `sysMiscInfo.cpp`, `debug.cpp`, `presets/sample.cpp`, `presets/arcadeSystems.cpp` | custom clock/quadOutput設定、長さ・loop・ROM容量警告、sample instrument判定、デバッグ32voice、プリセット登録 | F4 |
+| `doc/7-systems`, `doc/4-instrument`, ファイル形式文書 | 音源／楽器・ID・非対応範囲・quad配線を文書化。autoPatchbayは出力番号とデバイス番号をそのまま結ぶため、4ch modeのrearをステレオへ自動合算しない | F3/F4 |
+| `vgmOps.cpp` | 既存hasC352とheader欄はゼロplaceholderのみ。初期統合ではVGM非対応を明示、sysDef最小VGM版は0にして選択不可。opcode e1だけ追加して「対応済み」としない。完全対応は別途ROM block/clock/divider/word endianの検証を伴うPhaseが必要 | F4/Q1 |
+
+C140は24voice、C219は16voice、既存dispatchは8-bitレジスタ＋2出力。C352は32voice、8ワード/voice、グローバルキー実行、4出力、固有ramp・loop・LINKを持つため、同じクラスのモード追加ではなく独立実装とする。C219の256値decoderテーブルとsample形式は再利用できるが、C140のG.711変換・16-bit ROM配置は再利用しない。
+
+### 検証ベクトルと後続検証ゲート
+
+以下は `../tests/vectors.cpp` にレジスタ列・期待値として実装済み。既定flagsはFILTER=1、freq=ffff、4volume=ff、初回counter=ffff。個別の前提は各テストの`key`呼出しで上書きする。
+
+| ケース | 代表的な期待値 | 使用Phase |
+|---|---|---|
+| reset/無音 | 4出力0、control=0、noise=1234 | p002/p004 |
+| 単一・終端 | 非ループstart=endなら無音。guardを置きend=start+1なら最初の7fが15/出力、次にBUSY解除 | p002/p004 |
+| linear境界 | 7f→32512、80→-32768 | p002/p004 |
+| μ-law全256値 | F2 tableとの全要素一致、80=-32、ff=-31264 | p002/p004 |
+| register境界／commit | voice31 base=f8、mask合成1234→ab34、partial0202無効果、full0202でBUSY | p002/p004 |
+| freq／補間 | freq=8000の初回counter=7fff、PCM40の初回出力3、2frameで1fetch。freq=0はfetch0 | p002/p004 |
+| forward/reverse/ping-pong | ROM読出列0,1,2,1,2／3,2,1,0／0,1,2,1,0,1 | p002/p004 |
+| LINK／24-bit境界 | bank1/start2/end2/loop7→pos20007。ffffffの次のROM読出は0 | p002/p004 |
+| noise | seed1234→091a→048d→fdb0、ROM読出なし | p002/p004 |
+| stop／同時KEYON+KEYOFF | 次frame無音、同時指定時の最終flags=0004 | p002/p004 |
+| ramp／4出力／位相 | PCM40でFL=80、RR=40に収束後の出力1024,0,0,512。位相反転は-1024／-512、RL独立も確認 | p002/p004 |
+| voice31／32voice | voice31単独PCM40初回8、32voice PCM7f初回508、255更新後-1532（wrap） | p002/p004 |
+| 実装差異 | QuattroPlayのFILTER即時volume=255、終端保持、live位相無反映、control読出0、rate88200 | p001比較根拠 |
+
+実行可能な参照ゲート: `powershell -NoProfile -ExecutionPolicy Bypass -File plan/ws001-c352/tests/verify.ps1`。依存はPowerShell＋GCCのみ、ROMはテスト内で生成。p001は参照実装を検証するもので、未作成のFurnace C352コアの検証ではない。
+
+p002/p004では上記コマンドを継続使用し、新コアに同じ入力列を渡す比較アダプタを認可スコープ内で作成する。ホスト契約の追加ベクトルは次で固定する: 1byte非ループのguard配置、65535+guardのbank末尾、65536byte loop、65536byte非ループ拒否、ROM満杯／空／不正loop拒否、byte順保持、4ch→2chの(100,200,300,400)→(200,300)、負の奇数の0方向除算、ミュート中noise継続、word register dump保存。
+
+p003/p004統合ゲートはCMake構成済みの専用ビルド先に対し `cmake --build <configured-build> --config Release`。同build内に新設するC352比較テストを登録した後 `ctest --test-dir <configured-build> -C Release --output-on-failure -R c352` を使う。現時点では対象CTestは存在しないため、これを実行済み・合格とは扱わない。既存testディレクトリ／CMakeには今回使用可能なC352 gateがない。
+
+UI／保存ゲート: C352を選択→32ch表示→8-bitとC219 sampleを割当→ch1/ch32の発音、stop、forward/ping-pong loop、pan、pitchを確認→quadOutput両設定で再生→.fur保存→再読込でsystem ID・楽器・sample bytes・clock・quadOutputが同一。VGM画面はC352非対応を表示。従来C140/C219曲の再読込・renderが不変であることをp004/p005で確認する。実際のfixtureとビルド依存は各Phaseのready化時に用意し、今回は未実行。
+
+### 2026-09-18 — 検証結果・Phase終了
+
+- **Effective Status: cleared**。先頭のStatus=readyと「未実行」は実行前スナップショットとして保持し、現状態は本Execution Log末尾を正本とする。
+- Windows PowerShell 5.1 + GCC 8.3.0で `powershell -NoProfile -ExecutionPolicy Bypass -File plan/ws001-c352/tests/verify.ps1` がexit 0。MAME 330件＋QuattroPlay 8件、計338件の数値assertionが成功。両harnessは `-Wall -Wextra -Werror` でコンパイル成功、固定参照8ファイルのSHA-256一致。
+- 仕様表の全行についてM1〜M3/Q1〜Q2/F1〜F4または明示的な製品設計判断へ追跡できることを目視確認。資料間の不一致は互換プロファイルで解決し、実機未確認事項をins005/ins007へ分離。
+- 完了条件対応: レジスタ／期待出力表＝上記数値契約、C140/C219差分＝API接続表と差分説明、再現可能ベクトル＝tests、未確定と根拠の区別＝互換プロファイル／insights。全5条件を満たす。
+- チェックポイント a5bd354d7 のP書全文が現在のP書先頭に一致することを検証し、本文改変なしを確認。`git diff --no-index --check` で追記差分を確認。`git status --porcelain -- src CMakeLists.txt` は空。
+- Furnace本体・ビルド設定は未変更。Furnace全体ビルド、既存曲回帰、UI／保存試験は本Phaseの検証対象外で未実行。実装済み音源としてのclearedではない。
+- 実行コミットは次のPhase ID付き成果コミットと、Queue終了記録から追跡する。p002以降は未認可・未着手。

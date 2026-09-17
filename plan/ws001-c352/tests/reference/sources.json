@@ -1,0 +1,66 @@
+[
+  {
+    "repo": "mamedev/mame",
+    "commit": "92a3f13f9664e29d5c8ffba9634e714d623f6baf",
+    "path": "src/devices/sound/c352.cpp",
+    "file": "mame-c352.cpp",
+    "sha256": "b234ecbd3eb8c4f9b94c5a17996cff657ceacbfeeaa70f25736960271e8d60d9",
+    "url": "https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/src/devices/sound/c352.cpp"
+  },
+  {
+    "repo": "mamedev/mame",
+    "commit": "92a3f13f9664e29d5c8ffba9634e714d623f6baf",
+    "path": "src/devices/sound/c352.h",
+    "file": "mame-c352.h",
+    "sha256": "9ac4fd4a29fca1f99afbf824bc7eeb4b84d756cc15b1651224caf1e325571011",
+    "url": "https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/src/devices/sound/c352.h"
+  },
+  {
+    "repo": "mamedev/mame",
+    "commit": "92a3f13f9664e29d5c8ffba9634e714d623f6baf",
+    "path": "src/mame/namco/namcos11.cpp",
+    "file": "mame-namcos11.cpp",
+    "sha256": "565f33acb3c485540712ca98d20ba082ecf336517e42317b16d5d5d2e9ea1569",
+    "url": "https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/src/mame/namco/namcos11.cpp"
+  },
+  {
+    "repo": "superctr/QuattroPlay",
+    "commit": "448f316945d50a5aec5d1ed9607e04b4a0a3ee9c",
+    "path": "src/emu/c352.c",
+    "file": "QuattroPlay-c352.c",
+    "sha256": "efb20b3b81f4795e4d07c705ba4db3e176b308022f2c1269b791a9cc50d482af",
+    "url": "https://github.com/superctr/QuattroPlay/blob/448f316945d50a5aec5d1ed9607e04b4a0a3ee9c/src/emu/c352.c"
+  },
+  {
+    "repo": "superctr/QuattroPlay",
+    "commit": "448f316945d50a5aec5d1ed9607e04b4a0a3ee9c",
+    "path": "src/emu/c352.h",
+    "file": "QuattroPlay-c352.h",
+    "sha256": "aa0f81521551961b660625e85443a57329fa18b76e6234bbc598934821ab825f",
+    "url": "https://github.com/superctr/QuattroPlay/blob/448f316945d50a5aec5d1ed9607e04b4a0a3ee9c/src/emu/c352.h"
+  },
+  {
+    "repo": "superctr/QuattroPlay",
+    "commit": "448f316945d50a5aec5d1ed9607e04b4a0a3ee9c",
+    "path": "COPYING",
+    "file": "QuattroPlay-COPYING",
+    "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+    "url": "https://github.com/superctr/QuattroPlay/blob/448f316945d50a5aec5d1ed9607e04b4a0a3ee9c/COPYING"
+  },
+  {
+    "repo": "mamedev/mame",
+    "commit": "92a3f13f9664e29d5c8ffba9634e714d623f6baf",
+    "path": "COPYING",
+    "file": "mame-COPYING",
+    "sha256": "9814ccb157fdb0a8f0fa049f858b6ac761320e90eb28f54e2972468d6d6ac0ca",
+    "url": "https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/COPYING"
+  },
+  {
+    "repo": "mamedev/mame",
+    "commit": "92a3f13f9664e29d5c8ffba9634e714d623f6baf",
+    "path": "docs/legal/BSD-3-Clause",
+    "file": "mame-BSD-3-Clause",
+    "sha256": "a27554938d3dd6569931e5e18b93214a57f47bc1bb8b75fc32fdd18abe042a07",
+    "url": "https://github.com/mamedev/mame/blob/92a3f13f9664e29d5c8ffba9634e714d623f6baf/docs/legal/BSD-3-Clause"
+  }
+]
