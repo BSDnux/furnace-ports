@@ -13,6 +13,8 @@
 | ins009 | ws001p001 / sample contract | MAME互換では非ループstart=endが無音。Furnace配置は音声末尾の後にguardを置きendをguard位置とする。64KiB bankを越える通常sampleは初期対応外 | resolved | p002でguard／容量／不正loop検証を追加 |
 | ins010 | ws001p001 / integration | VGMはC352 header placeholderのみで実用対応なし。初期統合は非対応を明示。完全対応はe1以外にROM block・divider・clock・endian検証が必要 | open | VGM対応を別Phaseとして認可する場合 |
 | ins011 | ws001p001 / F2 | dataC219とc219Tableは流用可。ただしsample.cppの汎用C219→16bit変換は負側を単純符号反転する経路があり、C352ハードdecoderの負側-32差をそのまま表す関数ではない | resolved | p002はdataC219 byte＋C352 decoderを使用、既存C219変換は変更しない |
+| ins012 | ws001p002 / host integration | pitchの期待値はoldCenterRateで8363／8372 Hzの基準が変わる。customClockは既存共通APIの100 kHz〜40 MHzにclampされる | resolved | dispatch-test.cppで旧／現行基準・centerRate変更・範囲内customClockを検証済み |
+| ins013 | ws001p002 / build verification | Windows上の再現手順をVS2019 Developer PowerShell／MSVC v142 x64／MSBuildへ統一。既定1 job、同じproduction objectと依存libで実dispatcherを検証 | resolved | tests/verify.ps1とbuild-p002.ps1を再利用。Ninja版は削除済み |
 
 ## q001 evidence notes (2026-09-18)
 

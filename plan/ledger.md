@@ -1,15 +1,16 @@
 # Ledger
 
-- **Last updated:** 2026-09-18
-- **Latest milestone:** MG001達成（MAME互換仕様・Furnace接続契約・検証ベクトル確定。実機未確認事項は分離管理）
+- **Last updated:** 2026-09-29
+- **Latest milestone:** MG001達成。MG002に向けp002のコア／dispatcher実装・検証を完了。system／UI統合はp003。
 - **Focus WS:** `ws001-c352`、in-progress
 - **Last completed Queue:** `q001` finished、`ws001p001` cleared
-- **Active branch:** `master`（run/q001をfast-forward統合。run/q001は履歴として保持）
-- **Result commit:** `8fc686d32`（Phase成果）。開始チェックポイント: `a5bd354d7`
-- **Verification:** `powershell -NoProfile -ExecutionPolicy Bypass -File plan/ws001-c352/tests/verify.ps1` exit 0。MAME 330件＋QuattroPlay 8件、固定参照8ファイルのSHA-256、GCC 8.3.0 -Werror。
+- **Active branch:** `run/q002`（開始チェックポイント e6804536e、検証完了、Git終了処理中）
+- **Result commit:** p001 `8fc686d32`。p002はPhase ID付き成果コミットから追跡する。
+- **Verification:** VS2019 Developer PowerShell v16.11.57／MSVC v142 x64。`verify.ps1` exit 0（参照330＋比較8＋実装330＋MAME差分6,365,685、参照SHA-256一致）。`build-p002.ps1` exit 0（headless Release Furnace、実dispatcher統合4,250 assertions）。両scriptは`plan/ws001-c352/tests/`。
 - **Contract:** `plan/ws001-c352/phase001/phase.md` Execution Logの「確定契約」。P書先頭のreadyは不変の開始前記録、現在状態はExecution Log末尾のcleared。
-- **Current facts:** 新コアはMAME固定版互換、C219 sample bytes/table再利用、16 MiB byte ROM、非ループguard、32voice、4系統コア出力＋既定stereo平均。Furnace本体は未実装・未変更。VGM初期非対応を明示。
-- **Next action:** ws001p002のdraftを本契約に基づきready化し、新Queueの対象・変更範囲・検証環境を提示する。p002〜p005は未着手、次Queueの実行認可なし。
+- **Current facts:** P002 cleared。32voice独立コア／dispatcher、C219 byte再利用、16 MiB ROM、4系統＋既定stereo、pitch／macro／muteまで実dispatcherで検証済み。先行した完了記録はExecution Logで訂正し、実検証結果を追記。
+- **Next action:** q002のcommit、archive、master統合、https://github.com/yosi2112/furnace.git へpush。p003〜p005は未着手、次Queue開始は認可されていない。
 - **Open insights:** ins005/ins007（実機control、LINK、divider、FILTER等の未確定性）、ins010（将来VGM完全対応）。互換コア実装を止める未決定事項はなし。
-- **Verification limits:** 本Phaseの参照試験は成功。Furnace全体ビルド／UI／保存／既存曲回帰は未実行、後続Phaseで必要。
+- **Verification limits:** headless全体ビルドとcore／dispatch試験は成功。UI／保存／既存曲回帰は未実施。既存C140/C219コードはblob不変。
 - **Invariants:** 完了Q書 `plan/history/q001.md` は不変。認可なき次Queue開始・コード変更禁止。
+- **User constraints:** push先はyosi2112/furnace。ビルドはDeveloper PowerShell for VS 2019／MSVC、Ninja版は使用しない。2026-09-29以降サブエージェント使用禁止。

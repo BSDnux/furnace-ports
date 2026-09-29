@@ -1,5 +1,11 @@
-// Specification vectors; does not implement or test a Furnace C352 core.
+// Specification vectors, shared by the pinned reference and production core adapter.
+#include <algorithm>
+#include <string>
+#ifdef C352_IMPLEMENTATION
+#include "core-adapter.hpp"
+#else
 #include "oracle.hpp"
+#endif
 static int checks=0;
 static void eq(long long actual,long long expected,const char* label) {
   ++checks;

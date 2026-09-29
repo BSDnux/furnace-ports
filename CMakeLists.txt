@@ -766,6 +766,7 @@ src/engine/platform/sound/d65modified.c
 src/engine/platform/sound/ted-sound.c
 
 src/engine/platform/sound/c140_c219.c
+src/engine/platform/sound/c352.cpp
 
 src/engine/platform/sound/dave/dave.cpp
 
@@ -904,6 +905,7 @@ src/engine/platform/pv1000.cpp
 src/engine/platform/k053260.cpp
 src/engine/platform/ted.cpp
 src/engine/platform/c140.cpp
+src/engine/platform/c352.cpp
 src/engine/platform/esfm.cpp
 src/engine/platform/powernoise.cpp
 src/engine/platform/dave.cpp

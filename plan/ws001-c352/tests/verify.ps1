@@ -1,9 +1,22 @@
-param([string]$Compiler = 'g++')
+param([string]$Compiler = 'cl.exe')
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/enter-vs2019.ps1"
 $root = $PSScriptRoot
 $repo = (Resolve-Path "$root/../../..").Path
 $build = "$root/build"
 New-Item -ItemType Directory -Force $build | Out-Null
+function Compile([string]$name, [string[]]$sources, [string[]]$options=@()) {
+    $outDir="$build/msvc/$name"
+    New-Item -ItemType Directory -Force $outDir | Out-Null
+    Push-Location $outDir
+    try {
+        $ErrorActionPreference='Continue'
+        & $Compiler /nologo /EHsc /O2 /W3 /utf-8 "/I$repo" "/I$build" @options @sources "/Fe:$build/$name.exe" *> "$build/$name-compile.log"
+        $result=$LASTEXITCODE
+        $ErrorActionPreference='Stop'
+        if ($result -ne 0) { Get-Content "$build/$name-compile.log" -Tail 40; throw "$name compilation failed" }
+    } finally { Pop-Location }
+}
 foreach ($s in (Get-Content "$root/reference/sources.json" -Raw | ConvertFrom-Json)) {
     if ((Get-FileHash "$root/reference/$($s.file)" -Algorithm SHA256).Hash.ToLower() -ne $s.sha256) {
         throw "Source hash mismatch: $($s.file)"
@@ -66,16 +79,23 @@ $sample = Get-Content "$repo/src/engine/sample.cpp" -Raw
 $existingTable = Slice $sample 'const short c219Table[256]=' 'unsigned char c219HighBitPos'
 $generated = $prefix + $types + $suffix + $methods + $reset + "`nvoid c352_device::init_table() {`n" + $table + "`n}`n" + $existingTable
 [IO.File]::WriteAllText("$build/oracle.hpp", $generated)
-& $Compiler -std=c++17 -O0 -Wall -Wextra -Werror -I $build "$root/vectors.cpp" -o "$build/vectors.exe"
-if ($LASTEXITCODE -ne 0) { throw 'Reference harness compilation failed' }
+Compile 'vectors' @("$root/vectors.cpp") @('/std:c++14')
 & "$build/vectors.exe"
 if ($LASTEXITCODE -ne 0) { throw 'Reference vectors failed' }
 $qp = Get-Content "$root/reference/QuattroPlay-c352.c" -Raw
 $qp = $qp.Replace('#include "../lib/vgm.h"', '#define vgm_write(...) ((void)0)')
+# MSVC does not support GNU void-pointer arithmetic. Byte arithmetic is identical.
+$qp = $qp.Replace('(void*)&c->v[addr/8]', '(uint8_t*)&c->v[addr/8]')
 [IO.File]::WriteAllText("$build/qp-source.c", $qp)
 Copy-Item "$root/reference/QuattroPlay-c352.h" "$build/c352.h" -Force
-& $Compiler -x c -std=c11 -O0 -Wall -Wextra -Werror -I $build "$root/qp-vectors.c" -o "$build/qp-vectors.exe"
-if ($LASTEXITCODE -ne 0) { throw 'QuattroPlay harness compilation failed' }
+Compile 'qp-vectors' @("$root/qp-vectors.c") @('/TC','/std:c11')
 & "$build/qp-vectors.exe"
 if ($LASTEXITCODE -ne 0) { throw 'QuattroPlay comparison vectors failed' }
+[IO.File]::WriteAllText("$build/c219-table.hpp", $existingTable)
+Compile 'core-vectors' @("$root/vectors.cpp","$repo/src/engine/platform/sound/c352.cpp") @('/std:c++14','/DC352_IMPLEMENTATION')
+& "$build/core-vectors.exe"
+if ($LASTEXITCODE -ne 0) { throw 'Production core vectors failed' }
+Compile 'differential' @("$root/differential.cpp","$repo/src/engine/platform/sound/c352.cpp") @('/std:c++14')
+& "$build/differential.exe"
+if ($LASTEXITCODE -ne 0) { throw 'MAME differential tests failed' }
 Write-Output 'PASS: pinned source hashes and extracted MAME reference vectors'
