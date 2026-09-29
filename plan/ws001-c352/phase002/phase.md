@@ -69,3 +69,4 @@ p001の全検証ベクトルが通過し、FurnaceのビルドでC352ディス�
 - 統合テストの初回失敗はテスト前提の不一致だった。Furnaceの`oldCenterRate=true`既定値（8363 Hz）とcustomClock上限40 MHzを確認し、現行中央レートと旧互換設定を別々に検証する期待値へ修正。実装のピッチ処理を期待値に合わせて改変していない。
 - `git hash-object`／`git rev-parse HEAD:<path>`でC140/C219、sample.cpp、p001、q001のblob不変を確認。開始チェックポイントのp002全文が現在ファイルのprefixとして保存されていることも確認。CMakeの本体変更は新しいC352ソース2ファイルの追加のみ。
 - Ninja版のtask専用binary／zip／build treeは存在しないことを確認。ビルド手順はMSBuildへ統一。system／instrument／GUI／保存／既存曲回帰はp003〜p005の範囲で未実施。q002終了後に自動着手しない。
+- 成果コミット確定: `30fb4baff`。q002をfinishedとしてhistory/q002.mdへ保存し、終了記録commit後にmasterへfast-forward統合・ユーザー指定originへ通常pushする。
