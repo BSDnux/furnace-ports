@@ -99,8 +99,8 @@ class DivPlatformC352: public DivDispatch {
     void forceIns();
     void tick(bool sysTick=true);
     void muteChannel(int ch, bool mute);
+    void rWrite(unsigned short addr, unsigned short val) ;
     int getOutputCount();
-    bool hasSoftPan(int ch);
     void notifyInsChange(int ins);
     void notifyWaveChange(int wave);
     void notifyInsDeletion(void* ins);
