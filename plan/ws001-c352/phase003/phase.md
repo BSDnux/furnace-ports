@@ -121,3 +121,5 @@
 - 中断後の制限環境ではMSBuildが診断なしで終了したが、必要権限で再実行しビルド成功。統合試験の初回実行はWindows stack overflow（exit -1073741571）。試験内のDivSong／DivInstrumentをheapへ移して解消し、上記898件が成功した。
 - 検証限界: GUIはReleaseビルド、compiled table／source assertions、ImGui debug frameで確認。手動GUI操作・大規模既存曲回帰・最終品質判定は未実施でP004／P005に残す。
 - 成果コミット: このExecution Logを含む `feat(c352): integrate system, instruments and GUI`。確定hashはq003終了記録とledgerへ記録する。
+- 成果commit確定: `45977c5fb`。q003 finished／archiveはplan/history/q003.md。
+- 統合／push状況: 自動承認審査がmasterへのfast-forwardとGitHub originへのpushを拒否。実行前q003提案とorigin照合後の再審査でも、ユーザーによるpayload・宛先の明示承認不足と判定された。コード検証はclearedのまま、成果はrun/q003に保持し、master変更／pushは未実行。

@@ -1,17 +1,17 @@
 # Ledger
 
 - **Last updated:** 2026-10-02
-- **Latest milestone:** MG001達成。MG002に向けp002のコア／dispatcher実装・検証を完了。system／UI統合はp003。
-- **Focus WS:** `ws001-c352`、in-progress
-- **Last completed Queue:** `q002` finished、`ws001p002` cleared（archive: plan/history/q002.md）
-- **Active branch:** `run/q003`（checkpoint 2c0122584）
-- **Result commit:** p002 `30fb4baff`、開始チェックポイント `e6804536e`。p001は`8fc686d32`。
-- **Verification:** VS2019 Developer PowerShell v16.11.57／MSVC v142 x64。`verify.ps1` exit 0（参照330＋比較8＋実装330＋MAME差分6,365,685、参照SHA-256一致）。`build-p002.ps1` exit 0（headless Release Furnace、実dispatcher統合4,250 assertions）。両scriptは`plan/ws001-c352/tests/`。
-- **Contract:** `plan/ws001-c352/phase001/phase.md` Execution Logの「確定契約」。P書先頭のreadyは不変の開始前記録、現在状態はExecution Log末尾のcleared。
-- **Current facts:** P002 cleared。32voice独立コア／dispatcher、C219 byte再利用、16 MiB ROM、4系統＋既定stereo、pitch／macro／muteまで実dispatcherで検証済み。先行した完了記録はExecution Logで訂正し、実検証結果を追記。
-- **Next action:** q003 running。2026-09-30「q003を実行。」で4時間枠を認可。P003実装済み、VS2019 GUI build／registry／save-reload試験を実行中。終了まで次Queueに進まない。
-- **Open insights:** ins005/ins007（実機control、LINK、divider、FILTER等の未確定性）、ins010（将来VGM完全対応）。互換コア実装を止める未決定事項はなし。
-- **Verification limits:** headless全体ビルドとcore／dispatch試験は成功。UI／保存／既存曲回帰は未実施。既存C140/C219コードはblob不変。
-- **Invariants:** 完了Q書 `plan/history/q001.md`、`plan/history/q002.md` は不変。認可なき次Queue開始・コード変更禁止。
-- **User constraints:** push先はyosi2112/furnace。ビルドはDeveloper PowerShell for VS 2019／MSVC、Ninja版は使用しない。2026-09-29以降サブエージェント使用禁止。
-- **Planning:** P003本体は不変。進捗はExecution Logに追記。q003でverify.ps1／build-p002.ps1再通過、verify-p003-static.ps1 74件通過。GUI統合ゲート待ち。2026-10-02の再開指示でbuild-p003.ps1 -Jobs 4を続行中。GUIはWITH_LOCALE=ON／USE_MOMO=ON。
+- **Latest milestone:** MG001／MG002／MG003達成。C352コア、dispatcher、システム／楽器／GUI／文書を統合・検証済み。最終品質判定MG004は未達。
+- **Focus WS:** `ws001-c352`、in-progress（P004／P005未実行）
+- **Last completed Queue:** `q003` finished、`ws001p003` cleared。archive: `plan/history/q003.md`。
+- **Active branch:** `run/q003`（ローカル成果・終了記録を保持。master統合／pushは自動承認審査で拒否され、未実行）
+- **Result commit:** P003 `45977c5fb`、開始checkpoint `2c0122584`。P002 `30fb4baff`、P001 `8fc686d32`。
+- **Verification:** VS2019 Developer PowerShell／MSVC v142 x64／MSBuild。verify.ps1 exit 0（参照330＋比較8＋実装330＋MAME差分6,365,685、参照SHA-256一致）。build-p002.ps1 exit 0（headless Release、実dispatcher 4,250件）。build-p003.ps1 exit 0（GUI Release、統合898件、GUI/static／frozen-source 74件）。P003再現手順はtests/README-p003.md。
+- **Current facts:** C352 system ID `0xe8`／instrument type `68`、32ch、8-bit+C219 mask、VGM version 0。専用楽器とAMIGA fallback、sample map／macros、sample削除保護、JSON、FUI sample埋込、.fur別engine再読込、clock／quad flags、stereo→quad切替を検証済み。
+- **Verification limits:** GUIはReleaseビルド・compiled chooser・静的検証・ImGui debug frame。手動GUI操作、大規模既存曲回帰、最終品質検証はP004／P005に残す。
+- **Next action:** 自動承認審査がmaster統合と外部pushを拒否。検証済みC352実装・文書・q003記録をmasterへ統合し、https://github.com/yosi2112/furnace.git のmasterへ通常pushすることについて、ユーザーの明示承認待ち。P004／次Queueは開始しない。
+- **Open insights:** ins005／ins007（実機control、LINK、divider、FILTER等）、ins010（将来VGM完全対応）。ins014はGUIビルドでMomo localeを有効にして解決。
+- **Contract:** P001 Execution Logの確定契約、P003 Execution Log末尾のclearedが現在状態。P書本文のreadyは着手前の不変記録。
+- **Invariants:** q001〜q003 archiveと実行済みP書本文は不変。C140/C219／decoder／C352 core／P002参照・検証資産はblob不変。
+- **User constraints:** push先はyosi2112/furnace。Developer PowerShell for VS 2019／MSVC、Ninja不使用。サブエージェント禁止。
+- **Execution history:** 2026-09-30開始、GUIビルド途中で中断。2026-10-02「途中終了したコマンドから再開」で続行し実装・検証完了。統合／pushは上記の理由で保留。中断待機期間を除き4時間枠内。
