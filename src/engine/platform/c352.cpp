@@ -274,7 +274,7 @@ int DivPlatformC352::dispatch(DivCommand c) {
   if (c.chan>=32) return 0;
   switch (c.cmd) {
     case DIV_CMD_NOTE_ON: {
-      DivInstrument* ins=parent->getIns(chan[c.chan].ins,DIV_INS_AMIGA);
+      DivInstrument* ins=parent->getIns(chan[c.chan].ins,DIV_INS_C352);
       chan[c.chan].macroVolMul=ins->type==DIV_INS_AMIGA?64:255;
       chan[c.chan].macroPanMul=ins->type==DIV_INS_AMIGA?127:255;
       if (c.value!=DIV_NOTE_NULL) {
@@ -380,7 +380,7 @@ int DivPlatformC352::dispatch(DivCommand c) {
     }
     case DIV_CMD_PRE_PORTA:
       if (chan[c.chan].active && c.value2) {
-        if (parent->song.compatFlags.resetMacroOnPorta) chan[c.chan].macroInit(parent->getIns(chan[c.chan].ins,DIV_INS_AMIGA));
+        if (parent->song.compatFlags.resetMacroOnPorta) chan[c.chan].macroInit(parent->getIns(chan[c.chan].ins,DIV_INS_C352));
       }
       if (!chan[c.chan].inPorta && c.value && !parent->song.compatFlags.brokenPortaArp && chan[c.chan].std.arp.will && !NEW_ARP_STRAT) chan[c.chan].baseFreq=chan[c.chan].calcBaseFreq(chan[c.chan].note);
       chan[c.chan].inPorta=c.value;

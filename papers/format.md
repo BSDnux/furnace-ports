@@ -273,6 +273,7 @@ the channel count is stored in the file in order to allow Furnace to load files 
 - 0xe4: Namco Pole Position WSG - 8 channels
 - 0xe5: µPD1771C-017 - 4 channels
 - 0xe7: klattsch - 1 channel
+- 0xe8: Namco C352 - 32 channels (8-bit PCM and C219 PCM; VGM unsupported)
 - 0xf0: SID2 - 3 channels
 - 0xf1: 5E01 - 5 channels
 - 0xf5: SID3 - 7 channels

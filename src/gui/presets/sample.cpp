@@ -93,6 +93,11 @@ void initSystemPresetsSample(std::vector<FurnaceGUISysCategory>& sysCategories) 
     }
   );
   ENTRY(
+    _("Namco C352"), {
+      CH(DIV_SYSTEM_C352, 1.0f, 0, "")
+    }
+  );
+  ENTRY(
     _("Namco C140"), {
       CH(DIV_SYSTEM_C140, 1.0f, 0, "")
     }

@@ -8003,6 +8003,7 @@ void FurnaceGUI::drawInsEdit() {
             ins->type==DIV_INS_GA20 ||
             ins->type==DIV_INS_K053260 ||
             ins->type==DIV_INS_C140 ||
+            ins->type==DIV_INS_C352 ||
             ins->type==DIV_INS_C219 ||
             ins->type==DIV_INS_NDS ||
             ins->type==DIV_INS_GBA_DMA ||
@@ -8982,6 +8983,7 @@ void FurnaceGUI::drawInsEdit() {
               macroList.push_back(FurnaceGUIMacroDesc(_("Pitch"),&ins->std.pitchMacro,-2048,2047,160,uiColors[GUI_COLOR_MACRO_PITCH],true,macroRelativeMode));
               macroList.push_back(FurnaceGUIMacroDesc(_("Phase Reset"),&ins->std.phaseResetMacro,0,1,32,uiColors[GUI_COLOR_MACRO_OTHER],false,NULL,NULL,true));
               break;
+            case DIV_INS_C352:
             case DIV_INS_C140:
               macroList.push_back(FurnaceGUIMacroDesc(_("Volume"),&ins->std.volMacro,0,255,160,uiColors[GUI_COLOR_MACRO_VOLUME]));
               macroList.push_back(FurnaceGUIMacroDesc(_("Arpeggio"),&ins->std.arpMacro,-120,120,160,uiColors[GUI_COLOR_MACRO_PITCH],true,NULL,macroHoverNote,false,NULL,true,ins->std.arpMacro.val));

@@ -236,6 +236,7 @@ void FurnaceGUI::drawSampleEdit() {
       String warnLoop, warnLoopMode, warnLoopPos;
       String warnLoopStart, warnLoopEnd;
       String warnLength, warnRate;
+      bool hasC352=false;
 
       bool isChipVisible[DIV_MAX_CHIPS];
       bool isTypeVisible[DIV_MAX_SAMPLE_TYPE];
@@ -435,6 +436,26 @@ void FurnaceGUI::drawSampleEdit() {
               SAMPLE_WARN(warnLength,_("K053260: maximum sample length is 65535"));
             }
             break;
+          case DIV_SYSTEM_C352:
+            hasC352=true;
+            if (sample->samples>(sample->loop?65536U:65535U)) {
+              SAMPLE_WARN(warnLength,_("C352: maximum length is 65535 without a loop (plus one guard byte), or 65536 with a loop; each sample must fit one 64 KiB bank in the 16 MiB ROM"));
+            }
+            if (sample->loop) {
+              if (sample->loopMode==DIV_SAMPLE_LOOP_BACKWARD) {
+                SAMPLE_WARN(warnLoopMode,_("C352: backward loops are not supported; use forward or ping-pong"));
+              }
+              if (sample->loopStart<0 || sample->loopStart>=sample->loopEnd) {
+                SAMPLE_WARN(warnLoopStart,_("C352: loop start must precede loop end"));
+              }
+              if (sample->loopEnd>(int)sample->samples) {
+                SAMPLE_WARN(warnLoopEnd,_("C352: loop end must not exceed sample length"));
+              }
+            }
+            if (dispatch!=NULL) {
+              MAX_RATE("C352",dispatch->rate);
+            }
+            break;
           case DIV_SYSTEM_C140:
             if (sample->samples>65535) {
               SAMPLE_WARN(warnLength,_("C140: maximum sample length is 65535"));
@@ -600,13 +621,13 @@ void FurnaceGUI::drawSampleEdit() {
           default:
             break;
         }
-        if (e->song.system[i]!=DIV_SYSTEM_PCM_DAC) {
+        if (e->song.system[i]!=DIV_SYSTEM_PCM_DAC && e->song.system[i]!=DIV_SYSTEM_C352) {
           if (e->song.system[i]==DIV_SYSTEM_ES5506) {
             if (sample->loopMode==DIV_SAMPLE_LOOP_BACKWARD) {
               SAMPLE_WARN(warnLoopMode,_("ES5506: backward loop mode isn't supported"));
             }
           } else if (sample->loopMode!=DIV_SAMPLE_LOOP_FORWARD) {
-            SAMPLE_WARN(warnLoopMode,_("backward/ping-pong only supported in Generic PCM DAC\nping-pong also on ES5506"));
+            SAMPLE_WARN(warnLoopMode,_("backward/ping-pong only supported in Generic PCM DAC\nping-pong also on ES5506 and C352"));
           }
         }
 
@@ -687,6 +708,9 @@ void FurnaceGUI::drawSampleEdit() {
           ImGui::TableNextColumn();
           ImGui::AlignTextToFramePadding();
           ImGui::Text(_("Type"));
+          if (hasC352 && ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(_("C352 renders 8-bit PCM or C219 PCM. Other source formats are converted to 8-bit PCM."));
+          }
           ImGui::SameLine();
           ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
           if (ImGui::BeginCombo("##SampleType",sampleType.c_str())) {
@@ -887,6 +911,8 @@ void FurnaceGUI::drawSampleEdit() {
           }
           if (ImGui::IsItemHovered() && !warnLoopMode.empty()) {
             ImGui::SetTooltip("%s",warnLoopMode.c_str());
+          } else if (hasC352 && ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(_("C352 supports forward and ping-pong loops with byte-aligned positions. Loop end is exclusive. Maximum sample length: 65536 with a loop, 65535 without a loop."));
           }
           popWarningColor();
 

@@ -31,6 +31,7 @@ the following instrument types are available:
 - [Bifurcator](bifurcator.md) - for use with Bifurcator chip.
 - [C140](c140.md) - for use with C140 sample chip.
 - [C219](c219.md) - for use with C219 sample chip.
+- [C352](c352.md) - for use with C352 sample chip.
 - [C64](c64.md) - for use with Commodore 64 SID.
 - [Dave](dave.md) - for use with Dave chip.
 - [ES5506](es5506.md) - for use with Ensoniq ES5506 sound chip.

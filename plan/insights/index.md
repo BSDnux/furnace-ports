@@ -15,6 +15,7 @@
 | ins011 | ws001p001 / F2 | dataC219とc219Tableは流用可。ただしsample.cppの汎用C219→16bit変換は負側を単純符号反転する経路があり、C352ハードdecoderの負側-32差をそのまま表す関数ではない | resolved | p002はdataC219 byte＋C352 decoderを使用、既存C219変換は変更しない |
 | ins012 | ws001p002 / host integration | pitchの期待値はoldCenterRateで8363／8372 Hzの基準が変わる。customClockは既存共通APIの100 kHz〜40 MHzにclampされる | resolved | dispatch-test.cppで旧／現行基準・centerRate変更・範囲内customClockを検証済み |
 | ins013 | ws001p002 / build verification | Windows上の再現手順をVS2019 Developer PowerShell／MSVC v142 x64／MSBuildへ統一。既定1 job、同じproduction objectと依存libで実dispatcherを検証 | resolved | tests/verify.ps1とbuild-p002.ps1を再利用。Ninja版は削除済み |
+| ins014 | ws001p003 / GUI build | GUI既存insEditはngettextを直接使用するため、headless用WITH_LOCALE=OFFをGUIへ流用すると未宣言エラーとなる。P003はWITH_LOCALE=ON／USE_MOMO=ONを明示 | resolved | tests/build-p003.ps1でGUI依存とlocaleを再現 |
 
 ## q001 evidence notes (2026-09-18)
 

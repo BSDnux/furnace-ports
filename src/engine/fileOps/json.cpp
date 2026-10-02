@@ -412,6 +412,7 @@ JSON serializeInstrument(DivInstrument* ins) {
     case DIV_INS_GA20:
     case DIV_INS_K053260:
     case DIV_INS_C140:
+    case DIV_INS_C352:
     case DIV_INS_C219:
     case DIV_INS_NDS:
     case DIV_INS_GBA_DMA:

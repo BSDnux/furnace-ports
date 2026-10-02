@@ -94,3 +94,30 @@
 ## Execution Log
 
 未実行。q003は提案中で、コード変更・ビルド・pushは未実施。
+
+### 2026-09-30 — q003開始
+
+- Status: in-progress。ユーザー指示「q003を実行。」により認可。run/q003、checkpoint 2c0122584。
+
+
+- 中間検証: verify.ps1 exit 0（参照330＋比較8＋実装330＋MAME差分6,365,685）、build-p002.ps1 -Jobs 4 exit 0（headless Release＋実dispatcher 4,250件）。GUI依存SDL／jsonを固定submodule commitで初期化し、build-p003.ps1実行中。
+- GUI/static gate 74件通過。C352のquad切替は既存DivDispatchContainer::CHECK_MISSING_BUFSで不足bufferを補うため、追加の再初期化は不要。既存経路を統合試験で確認する。
+
+
+- GUI初回ビルドの修正: 共通DivDispatch経由で参照不可のprotected debug flagsを公開output count表示に置換。headless設定由来のWITH_LOCALE=OFFでは既存insEditのngettextが未宣言となるため、GUI検証構成をWITH_LOCALE=ON／USE_MOMO=ONに修正。既存翻訳コードは変更しない。初回ログはtests/build/furnace-gui-vs2019-first-failure.log。
+
+
+### 2026-10-02 — 中断から再開
+
+- ユーザー指示「途中終了したコマンドから再開」。実行中のコンパイラは存在せず、Momo有効化後のGUIビルドが途中終了していることをログで確認。既存buildディレクトリを使ってbuild-p003.ps1を再実行する。
+### 2026-10-02 — 検証完了
+
+- Status: cleared。q003のP003受入条件を満たした。
+- `verify.ps1`: exit 0。参照330、比較8、実装330、MAME差分6,365,685件。固定参照SHA-256一致（2026-09-30実行。以後core／参照資産は不変）。
+- `build-p002.ps1 -Jobs 4`: exit 0。VS2019 MSBuild headless Release、実dispatcher 4,250 assertions（2026-09-30の最終ソースで再実行済み）。
+- `build-p003.ps1 -Jobs 4`: exit 0（2026-10-02）。VS2019／MSVC v142 x64、GUI Release、GUI/static／frozen-source 74件、production objectsによるregistry／save-reload／asset／dispatch 898件成功。
+- C352 ID 0xe8／instrument 68、32ch、sample mask、VGM非対応、compiled chooser、ImGui debug frame、全180 sample-map entries、macro／sample bytes／depth／loop、customClock／quadOutput、FUI埋込、JSON、sample削除保護、stereo→quadの共通buffer確保を検証。
+- C140/C219 ID 0xce／0xcf、24／16ch、保存／再読込とROMロードも通過。既存C140/C219、decoder、C352 core、vgmOps、P002検証資産のGit blobは不変。
+- 中断後の制限環境ではMSBuildが診断なしで終了したが、必要権限で再実行しビルド成功。統合試験の初回実行はWindows stack overflow（exit -1073741571）。試験内のDivSong／DivInstrumentをheapへ移して解消し、上記898件が成功した。
+- 検証限界: GUIはReleaseビルド、compiled table／source assertions、ImGui debug frameで確認。手動GUI操作・大規模既存曲回帰・最終品質判定は未実施でP004／P005に残す。
+- 成果コミット: このExecution Logを含む `feat(c352): integrate system, instruments and GUI`。確定hashはq003終了記録とledgerへ記録する。

@@ -2683,6 +2683,19 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
       }
       break;
     }
+    case DIV_SYSTEM_C352: {
+      bool quadOutput=flags.getBool("quadOutput",false);
+      if (ImGui::Checkbox(_("Four outputs (front L/R, rear L/R)"),&quadOutput)) {
+        altered=true;
+      }
+      ImGui::TextWrapped(_("Stereo mode averages front and rear for each side. Default clock: 25401600 Hz; sample rate: clock / 288. VGM export is not supported."));
+      if (altered) {
+        e->lockSave([&]() {
+          flags.set("quadOutput",quadOutput);
+        });
+      }
+      break;
+    }
     case DIV_SYSTEM_C140: {
       int bankType=flags.getInt("bankType",0);
 

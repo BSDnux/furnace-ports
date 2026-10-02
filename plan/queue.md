@@ -1,12 +1,12 @@
 # Queue Book
 
 - **Queue ID:** q003
-- **Status:** proposed
-- **Timebox:** 4時間（P003実装・検証の上限案。GUI依存取得を含む）
-- **Human authorization:** 2026-09-29 JST「P003の計画具体化して」「作業を進めて」。このQueueでは計画の具体化のみを認可済みとし、コード実行の認可は未取得。
+- **Status:** running
+- **Timebox:** 4時間（P003実装・検証の上限。GUI依存取得を含む）
+- **Human authorization:** 2026-09-30 JST「q003を実行。」。q003の4時間枠、変更範囲、検証、成果commit、master統合、指定originへの通常pushを認可。
 - **対象:** ws001p003 — C352システム・UI・資産統合
 - **依存関係:** ws001p002 cleared、成果commit `3a08cafe0`
-- **Item ws001p003:** pending（Queue認可待ち）
+- **Item ws001p003:** in-progress
 
 ## Allowed Touch Points
 
@@ -32,7 +32,7 @@
 - P004の大規模既存曲回帰、P005の最終品質判定。
 - Ninjaの導入・実行。
 
-## Proposed execution order
+## Execution order
 
 1. file ID `0xe8`、instrument type `68`、enum衝突、既存C140/C219 blobをpreflightで確認。
 2. system enum／definition、dispatch factory、instrument feature／sample lifecycleを接続。
@@ -42,7 +42,7 @@
 6. `verify.ps1`、`build-p002.ps1`、新設`build-p003.ps1`（VS2019 MSBuild GUI／registry／save-reload）を実行。
 7. 合格後のみP003成果commit、q003 archive、master統合、指定originへの通常pushを行う。失敗時はinsight記録とrollbackを行い、unclearedとする。
 
-## Proposed verification
+## Verification
 
 - Registry: C352がsystem chooser／file map／dispatch factoryに一意に登録され、32 channels、8-bit+C219 mask、VGM version 0となる。
 - Asset: dedicated instrumentのsample map、macro、sample usage/deletion protection、JSON／legacy pathが機能する。
@@ -53,4 +53,11 @@
 
 ## Authorization boundary
 
-P003の計画はready化したが、q003は`proposed`で停止する。ユーザーがP003の実行を明示するまで、上記Allowed Touch Pointsへのコード変更、ビルド、commit、pushを開始しない。
+2026-09-30の実行指示により、上記Allowed Touch Points内でP003を実行する。q003終了後は停止し、P004以降は別Queue認可まで開始しない。
+
+## Execution authorization
+
+- 2026-09-30 JST: ユーザー指示「q003を実行。」により、このQueueの4時間枠・変更範囲・検証・commit・master統合・originへの通常pushを認可。authorizedからrunningへ遷移。
+- 開始: 2026-09-30T01:38:09.6983906+09:00、branch run/q003、checkpoint 2c0122584。
+
+- 2026-10-02 JST: 「途中終了したコマンドから再開」によりq003の中断箇所からの続行を認可。中断待機期間を除き、元の実作業4時間枠を継続する。

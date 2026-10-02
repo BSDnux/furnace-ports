@@ -134,6 +134,7 @@ the following instrument types are available:
 - 65: µPD1771C
 - 66: SID3
 - 67: Klattsch
+- 68: C352 (existing SM sample map, LS sample list and MA macros)
 
 the following feature codes are recognized:
 

@@ -525,6 +525,13 @@ void putDispatchChip(void* data, int type) {
       COMMON_CHIP_DEBUG_BOOL;
       break;
     }
+    case DIV_SYSTEM_C352: {
+      DivDispatch* ch=(DivDispatch*)data;
+      ImGui::Text("> C352 (see register sheet)");
+      COMMON_CHIP_DEBUG;
+      ImGui::Text("- outputs: %d",ch->getOutputCount());
+      break;
+    }
     case DIV_SYSTEM_C140: {
       DivPlatformC140* ch=(DivPlatformC140*)data;
       ImGui::Text("> C140");
@@ -1058,6 +1065,12 @@ void putDispatchChan(void* data, int chanNum, int type) {
       COMMON_CHAN_DEBUG_BOOL;
       ImGui::TextColored(ch->setPos?colorOn:colorOff,">> SetPos");
       ImGui::TextColored(ch->reverse?colorOn:colorOff,">> Reverse");
+      break;
+    }
+    case DIV_SYSTEM_C352: {
+      SharedChannel* ch=(SharedChannel*)data;
+      ImGui::Text("> C352");
+      COMMON_CHAN_DEBUG;
       break;
     }
     case DIV_SYSTEM_C140: {

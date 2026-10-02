@@ -272,6 +272,9 @@ const char* FurnaceGUI::getSystemPartNumber(DivSystem sys, DivConfig& flags) {
     case DIV_SYSTEM_TED:
       return "TED";
       break;
+    case DIV_SYSTEM_C352:
+      return "C352";
+      break;
     case DIV_SYSTEM_C140:
       return "C140";
       break;

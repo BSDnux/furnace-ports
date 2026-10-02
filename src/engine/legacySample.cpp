@@ -54,6 +54,7 @@ bool DivEngine::convertLegacySampleMode() {
         ins->type==DIV_INS_GA20 ||
         ins->type==DIV_INS_K053260 ||
         ins->type==DIV_INS_C140 ||
+        ins->type==DIV_INS_C352 ||
         ins->type==DIV_INS_C219 ||
         ins->type==DIV_INS_NDS ||
         ins->type==DIV_INS_GBA_DMA ||
