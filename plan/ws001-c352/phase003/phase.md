@@ -123,3 +123,9 @@
 - 成果コミット: このExecution Logを含む `feat(c352): integrate system, instruments and GUI`。確定hashはq003終了記録とledgerへ記録する。
 - 成果commit確定: `45977c5fb`。q003 finished／archiveはplan/history/q003.md。
 - 統合／push状況: 自動承認審査がmasterへのfast-forwardとGitHub originへのpushを拒否。実行前q003提案とorigin照合後の再審査でも、ユーザーによるpayload・宛先の明示承認不足と判定された。コード検証はclearedのまま、成果はrun/q003に保持し、master変更／pushは未実行。
+
+### 2026-10-02 — master統合・push完了
+
+- ユーザー直接指示「C352実装・文書・q003記録をmasterへ統合し、GitHubのyosi2112/furnaceのmasterへpushしてください」により、前記の承認待ちは解消。
+- run/q003をmasterへfast-forwardし、origin https://github.com/yosi2112/furnace.git のmasterへ通常push成功（3a08cafe0 → ea32a2351）。履歴archiveは改変せず、台帳と本Execution Logを同期する。
+- コード変更なし。既存の検証結果を維持し、次Queueを開始せず停止する。
