@@ -1220,11 +1220,6 @@ void DivEngine::performVGMWrite(SafeWriter* w, DivSystem sys, DivRegWrite& write
       w->writeS_BE(baseAddr2S|(write.addr&0x1ff));
       w->writeC(write.val&0xff);
       break;
-    case DIV_SYSTEM_C352:
-      w->writeC(0xe1);
-      w->writeS_BE(baseAddr2S|(write.addr&0x7fff));
-      w->writeS_BE(write.val&0xffff);
-      break;
     case DIV_SYSTEM_OPL4:
     case DIV_SYSTEM_OPL4_DRUMS:
       w->writeC(0xd0);
@@ -1416,7 +1411,6 @@ SafeWriter* DivEngine::saveVGM(bool* sysToExport, bool loop, int version, bool p
   DivDispatch* writeK053260[2]={NULL,NULL};
   DivDispatch* writeC140[2]={NULL,NULL};
   DivDispatch* writeC219[2]={NULL,NULL};
-  DivDispatch* writeC352[2]={NULL,NULL};
   DivDispatch* writeNES[2]={NULL,NULL};
   DivDispatch* writePCM_OPL4[2]={NULL,NULL};
   DivDispatch* writeMultiPCM[2]={NULL,NULL};
@@ -2031,21 +2025,6 @@ SafeWriter* DivEngine::saveVGM(bool* sysToExport, bool loop, int version, bool p
           howManyChips++;
         }
         break;
-      case DIV_SYSTEM_C352:
-        if (!hasC352) {
-          hasC352=disCont[i].dispatch->chipClock;
-          CHIP_VOL(0x27,1.0);
-          willExport[i]=true;
-          writeC352[0]=disCont[i].dispatch;
-        } else if (!(hasC352&0x40000000)) {
-          isSecond[i]=true;
-          CHIP_VOL_SECOND(0x27,1.0);
-          willExport[i]=true;
-          writeC352[1]=disCont[i].dispatch;
-          hasC352|=0x40000000;
-          howManyChips++;
-        }
-        break;
       case DIV_SYSTEM_OPL4:
       case DIV_SYSTEM_OPL4_DRUMS:
         if (!hasOPL4) {
@@ -2217,7 +2196,7 @@ SafeWriter* DivEngine::saveVGM(bool* sysToExport, bool loop, int version, bool p
     w->writeI(hasES5505);
     w->writeC(0); // 5503 chans
     w->writeC(hasES5505?1:0); // 5505 chans
-    w->writeC(hasC352?72:0); // C352 clock divider
+    w->writeC(0); // C352 clock divider
     w->writeC(0); // reserved
     w->writeI(hasX1);
     w->writeI(hasC352);
@@ -2576,19 +2555,6 @@ SafeWriter* DivEngine::saveVGM(bool* sysToExport, bool loop, int version, bool p
       w->writeI(0);
       for (size_t i=0; i<memLen; i++) {
         w->writeC(mem[i]);
-      }
-    }
-    if (writeC352[i]!=NULL && writeC352[i]->getSampleMemUsage()>0) {
-      w->writeC(0x67);
-      w->writeC(0x66);
-      w->writeC(0x92);
-      unsigned char* mem=(unsigned char*)writeC352[i]->getSampleMem();
-      size_t memLen=writeC352[i]->getSampleMemUsage();
-      w->writeI((memLen+8)|(i*0x80000000));
-      w->writeI(writeC352[i]->getSampleMemCapacity());
-      w->writeI(0);
-      for (size_t j=0; j<memLen; j++) {
-        w->writeC(mem[j]);
       }
     }
   }
