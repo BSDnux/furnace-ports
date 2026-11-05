@@ -324,8 +324,8 @@ const char* cmdName[]={
   "FM_ALG",
   "FM_FMS",
   "FM_AMS",
-  "FM_FMS2",
-  "FM_AMS2",
+  "FM_LFO3",
+  "FM_LFO4",
 
   "KLATTSCH_PHONEME",
   "KLATTSCH_TRANSITION",
@@ -339,7 +339,9 @@ const char* cmdName[]={
   "KLATTSCH_TREMOLO",
   "KLATTSCH_GAIN",
   "KLATTSCH_BW_SCALE",
-  "KLATTSCH_FORMANT_SHIFT"
+  "KLATTSCH_FORMANT_SHIFT",
+
+  "TEST_REG"
 };
 
 // fail build if you forgot to update the array
@@ -1375,10 +1377,15 @@ void DivEngine::processRow(int i, bool afterDelay) {
         dispatchCmd(DivCommand(DIV_CMD_HINT_VOL_SLIDE_TARGET,i,chan[i].volSpeed,chan[i].volSpeedTarget));
         break;
       case 0xe0: // arp speed
-        // the arp speed is global. I have no idea why.
         if (effectVal>0) {
-          curSubSong->arpLen=effectVal;
-          dispatchCmd(DivCommand(DIV_CMD_HINT_ARP_TIME,i,curSubSong->arpLen));
+          if (song.compatFlags.arpSpeedGlobal) {
+            for (int i=0; i<song.chans; i++) {
+              chan[i].arpSpeed=effectVal;
+            }
+          } else {
+            chan[i].arpSpeed=effectVal;
+          }
+          dispatchCmd(DivCommand(DIV_CMD_HINT_ARP_TIME,i,effectVal));
         }
         break;
       case 0xe1: // portamento up
@@ -2619,7 +2626,7 @@ bool DivEngine::nextTick(bool noAccum, bool inhibitLowLat) {
         // don't run it if arp yield is enabled (which will be if a compat flag is on)
         if (chan[i].arp!=0 && !chan[i].arpYield && chan[i].portaSpeed<1) {
           if (--chan[i].arpTicks<1) {
-            chan[i].arpTicks=curSubSong->arpLen;
+            chan[i].arpTicks=chan[i].arpSpeed;
             // there are three arp stages, corresponding to note, note+x and note+y in the 00xy effect
             chan[i].arpStage++;
             if (chan[i].arpStage>2) chan[i].arpStage=0;

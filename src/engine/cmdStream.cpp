@@ -498,8 +498,8 @@ bool DivCSPlayer::tick() {
           case DIV_CMD_FM_ALG:
           case DIV_CMD_FM_FMS:
           case DIV_CMD_FM_AMS:
-          case DIV_CMD_FM_FMS2:
-          case DIV_CMD_FM_AMS2:
+          case DIV_CMD_FM_LFO3:
+          case DIV_CMD_FM_LFO4:
           case DIV_CMD_KLATTSCH_PHONEME:
           case DIV_CMD_KLATTSCH_TRANSITION:
           case DIV_CMD_KLATTSCH_VOICING:
@@ -562,6 +562,7 @@ bool DivCSPlayer::tick() {
           case DIV_CMD_N163_WAVE_LENGTH:
           case DIV_CMD_KLATTSCH_FORMANT:
           case DIV_CMD_KLATTSCH_AMP:
+          case DIV_CMD_TEST_REG:
             arg0=(unsigned char)stream.readC();
             arg1=(unsigned char)stream.readC();
             break;

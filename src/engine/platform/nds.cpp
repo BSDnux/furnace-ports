@@ -475,6 +475,7 @@ void DivPlatformNDS::forceIns() {
     rWrite8(0x02+i*16,chan[i].panning);
     writeOutVol(i);
   }
+  rWrite32(0x100,0x8000|globalVolume);
 }
 
 SharedChannel* DivPlatformNDS::getChanState(int ch) {
@@ -589,7 +590,7 @@ size_t DivPlatformNDS::getSampleMemUsage(int index) {
 
 bool DivPlatformNDS::isSampleLoaded(int index, int sample) {
   if (index!=0) return false;
-  if (sample<0 || sample>32767) return false;
+  if (sample<0 || sample>=getMaxSamples(index)) return false;
   return sampleLoaded[sample];
 }
 

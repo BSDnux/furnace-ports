@@ -138,6 +138,10 @@ const int vgmVersions[7]={
   0x172
 };
 
+const int midiQuantizeValues[12]={
+  4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192
+};
+
 // name, icon, letter icon
 const char* insTypes[DIV_INS_MAX+1][3]={
   {"SN76489/Sega PSG",ICON_FA_BAR_CHART,ICON_FUR_INS_STD},
@@ -207,7 +211,7 @@ const char* insTypes[DIV_INS_MAX+1][3]={
   {"Watara Supervision",ICON_FA_GAMEPAD,ICON_FUR_INS_SUPERVISION},
   {"NEC μPD1771C",ICON_FA_BAR_CHART,ICON_FUR_INS_UPD1771C},
   {"SID3",ICON_FA_KEYBOARD_O,ICON_FUR_INS_SID3},
-  {"Klattsch",ICON_FA_MICROPHONE,ICON_FA_MICROPHONE},
+  {"klattsch",ICON_FA_MICROPHONE,ICON_FUR_INS_KLATTSCH},
   {NULL,ICON_FA_QUESTION,ICON_FA_QUESTION}
 };
 
@@ -616,6 +620,8 @@ const FurnaceGUIActionDef guiActions[GUI_ACTION_MAX]={
   D("INS_DOWN", _N("Next instrument"), FURKMOD_SHIFT|SDLK_KP_MULTIPLY),
   D("STEP_UP", _N("Increase edit step"), FURKMOD_CMD|SDLK_KP_MULTIPLY),
   D("STEP_DOWN", _N("Decrease edit step"), FURKMOD_CMD|SDLK_KP_DIVIDE),
+  D("STEP_UP_COARSE", _N("Increase coarse edit step"), 0),
+  D("STEP_DOWN_COARSE", _N("Decrease coarse edit step"), 0),
   D("TOGGLE_EDIT", _N("Toggle edit mode"), SDLK_SPACE),
   D("METRONOME", _N("Metronome"), FURKMOD_CMD|SDLK_m),
   D("ORDER_LOCK", _N("Toggle order lock"), 0),
@@ -1114,6 +1120,7 @@ const FurnaceGUIColorDef guiColors[GUI_COLOR_MAX]={
   D(GUI_COLOR_INSTR_SUPERVISION,_N("Supervision"),ImVec4(0.52f,1.0f,0.6f,1.0f)),
   D(GUI_COLOR_INSTR_UPD1771C,_N("μPD1771C"),ImVec4(0.94f,0.52f,0.6f,1.0f)),
   D(GUI_COLOR_INSTR_SID3,_N("SID3"),ImVec4(0.6f,0.75f,0.6f,1.0f)),
+  D(GUI_COLOR_INSTR_KLATTSCH,_N("klattsch"),ImVec4(1.0f,0.415f,0.0f,1.0f)),
   D(GUI_COLOR_INSTR_UNKNOWN,_N("Other/Unknown"),ImVec4(0.3f,0.3f,0.3f,1.0f)),
 
   D(GUI_COLOR_CHANNEL_BG,_N("Single color (background)"),ImVec4(0.4f,0.6f,0.8f,1.0f)),
@@ -1134,6 +1141,7 @@ const FurnaceGUIColorDef guiColors[GUI_COLOR_MAX]={
   D(GUI_COLOR_PATTERN_SELECTION,_N("Selection"),ImVec4(0.15f,0.15f,0.2f,1.0f)),
   D(GUI_COLOR_PATTERN_SELECTION_HOVER,_N("Selection (hovered)"),ImVec4(0.2f,0.2f,0.3f,1.0f)),
   D(GUI_COLOR_PATTERN_SELECTION_ACTIVE,_N("Selection (clicked)"),ImVec4(0.4f,0.4f,0.5f,1.0f)),
+  D(GUI_COLOR_PATTERN_CURSOR_POS_INDICATOR,_N("Cursor out-of-view indicator"),ImVec4(0.4f,0.8f,1.0f,0.8f)),
   D(GUI_COLOR_PATTERN_HI_1,_N("Highlight 1"),ImVec4(0.6f,0.6f,0.6f,0.2f)),
   D(GUI_COLOR_PATTERN_HI_2,_N("Highlight 2"),ImVec4(0.5f,0.8f,1.0f,0.2f)),
   D(GUI_COLOR_PATTERN_ROW_INDEX,_N("Row number"),ImVec4(0.5f,0.8f,1.0f,1.0f)),
@@ -1325,6 +1333,7 @@ const int availableSystems[]={
   DIV_SYSTEM_OPL3_DRUMS,
   DIV_SYSTEM_OPZ,
   DIV_SYSTEM_TIA,
+  DIV_SYSTEM_SAA1099_NEW,
   DIV_SYSTEM_SAA1099,
   DIV_SYSTEM_AY8930,
   DIV_SYSTEM_POKEY,
@@ -1428,6 +1437,7 @@ const int chipsSquare[]={
   DIV_SYSTEM_AY8910,
   DIV_SYSTEM_PCSPKR,
   DIV_SYSTEM_POKEMINI,
+  DIV_SYSTEM_SAA1099_NEW,
   DIV_SYSTEM_SAA1099,
   DIV_SYSTEM_VIC20,
   DIV_SYSTEM_MSM5232,
@@ -1533,4 +1543,10 @@ const char* chipCategoryNames[]={
   _N("Special"),
   _N("Sample"),
   NULL
+};
+
+const char* triggerStates[3]={
+  _N("trigger: off"),
+  _N("trigger: rising edge"),
+  _N("trigger: falling edge")
 };

@@ -539,6 +539,14 @@ int DivPlatformLynx::getRegisterPoolSize()
   return 4*8+4;
 }
 
+void DivPlatformLynx::softReset() {
+  rWrite(0x44,0xff); //stereo attenuation select
+  rWrite(0x50,0x00); //stereo channel disable
+  for (int i=0; i<4; i++) { //stereo attenuation value
+    rWrite(0x40+i,0xff);
+  }
+}
+
 void DivPlatformLynx::reset() {
   mikey=std::make_unique<Lynx::Mikey>(rate);
 
@@ -549,7 +557,7 @@ void DivPlatformLynx::reset() {
   }
   writes.clear();
   if (dumpWrites) {
-    addWrite(0xffffffff,0);
+    softReset();
   }
   WRITE_STEREO(0);
 }
@@ -635,21 +643,27 @@ DivPlatformLynx::~DivPlatformLynx() {
 }
 
 DivPlatformLynx::MikeyFreqDiv::MikeyFreqDiv(int frequency) {
-
   int clamped=clamp(frequency, 36, 16383);
 
   auto top=bsr(clamped);
   
-  if (top>7)
+  if (top>8)
   {
-    clockDivider=top-7;
-    backup=clamped>>(top-7);
+    clockDivider=top-8;
+    backup=(clamped>>(top-8))-1;
+    // I know this looks really stupid. I am sorry.
+    //logV("low bits: %d (%d, %d)",clamped&((1U<<(top-8))-1),((1U<<(top-8))-1),(1U<<(top-9)));
+    if (clamped&((1U<<(top-8))-1)&((1U<<(top-9)))) {
+      backup++;
+    }
   }
   else
   {
     clockDivider=0;
-    backup=clamped;
+    backup=clamped-1;
   }
+  
+  //logV("set freq to %x/%x from %x",clockDivider,backup,frequency);
 }
 
 DivPlatformLynx::MikeyDuty::MikeyDuty(int duty) {
