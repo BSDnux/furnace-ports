@@ -1,3 +1,5 @@
+This is a fork of Furnace which mergers other branches before it upstream into tildarrow's main branch.
+
 # Furnace (chiptune tracker)
 
 ![screenshot](papers/screenshot3.png)
