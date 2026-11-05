@@ -60,6 +60,7 @@ for other operating systems, you may [build the source](#developer-info).
     - OKI MSM6258 and MSM6295
     - Konami K007232
     - Konami K053260
+    - Konami K054539
     - Irem GA20
     - Ensoniq ES5506
     - Namco C140
