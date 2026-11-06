@@ -946,6 +946,9 @@ int DivPlatformOPLL::dispatch(DivCommand c) {
       if ((int)properDrums==c.value) break;
       switchMode(c.value);
       break;
+    case DIV_CMD_TEST_REG:
+      immWrite(c.value,c.value2);
+      break;
     case DIV_CMD_MACRO_OFF:
       chan[c.chan].std.mask(c.value,true);
       break;
@@ -1085,6 +1088,14 @@ static const unsigned char nukedToEmuPatch[4]={
   0, 2, 3, 1
 };
 
+void DivPlatformOPLL::softReset() {
+  for (int i=0; i<9; i++) {
+    immWrite(0x20+i,0);
+    immWrite(0x30+i,0);
+    immWrite(0x10+i,0);
+  }
+}
+
 void DivPlatformOPLL::reset() {
   while (!writes.empty()) writes.pop();
   memset(regPool,0,256);
@@ -1108,7 +1119,7 @@ void DivPlatformOPLL::reset() {
     }
   }
   if (dumpWrites) {
-    addWrite(0xffffffff,0);
+    softReset();
   }
   if (selCore==1) {
     OPLL_reset(fm_emu);

@@ -81,11 +81,13 @@ class DivPlatformSMS: public DivDispatch {
     SharedChannel* getChanState(int chan);
     DivMacroInt* getChanMacroInt(int ch);
     unsigned short getPan(int chan);
+    void getPaired(int ch, std::vector<DivChannelPair>& ret);
     DivDispatchOscBuffer* getOscBuffer(int chan);
     int mapVelocity(int ch, float vel);
     float getGain(int ch, int vol);
     unsigned char* getRegisterPool();
     int getRegisterPoolSize();
+    void softReset();
     void reset();
     void forceIns();
     void tick(bool sysTick=true);

@@ -797,6 +797,12 @@ bool DivEngine::loadFur(unsigned char* file, size_t len, int variantID) {
     if (ds.version<200) {
       ds.compatFlags.oldSampleOffset=true;
     }
+    if (ds.version<255) {
+      ds.compatFlags.arpSpeedGlobal=true;
+    }
+    if (ds.version<256) {
+      ds.compatFlags.oldCenterRate=true;
+    }
     ds.isDMF=false;
 
     reader.readS(); // reserved
@@ -862,7 +868,7 @@ bool DivEngine::loadFur(unsigned char* file, size_t len, int variantID) {
       logD("chips: (%d, %d channels)",ds.systemLen,ds.chans);
       for (int i=0; i<ds.systemLen; i++) {
         unsigned short sysID=reader.readS();
-        if (sysID>0xff || sysID==0) {
+        if (sysID==0) {
           logE("unrecognized system ID %.4x",sysID);
           lastError=fmt::sprintf("unrecognized system ID %.4x!",sysID);
           delete[] file;
@@ -1046,6 +1052,7 @@ bool DivEngine::loadFur(unsigned char* file, size_t len, int variantID) {
       subSong->speeds.val[0]=(unsigned char)reader.readC();
       subSong->speeds.val[1]=(unsigned char)reader.readC();
       subSong->arpLen=reader.readC();
+      if (ds.version<255) subSong->arpLen=1;
       subSong->hz=reader.readF();
 
       subSong->patLen=reader.readS();
@@ -2332,7 +2339,6 @@ bool DivEngine::loadFur(unsigned char* file, size_t len, int variantID) {
       for (int i=0; i<ds.systemLen; i++) {
         if (ds.system[i]==DIV_SYSTEM_YM2612 ||
             ds.system[i]==DIV_SYSTEM_YM2612_EXT ||
-            ds.system[i]==DIV_SYSTEM_YM2612_EXT ||
             ds.system[i]==DIV_SYSTEM_YM2612_DUALPCM ||
             ds.system[i]==DIV_SYSTEM_YM2612_DUALPCM_EXT ||
             ds.system[i]==DIV_SYSTEM_YM2612_CSM) {
@@ -2391,6 +2397,54 @@ bool DivEngine::loadFur(unsigned char* file, size_t len, int variantID) {
       for (int i=0; i<ds.systemLen; i++) {
         if (ds.system[i]==DIV_SYSTEM_N163) {
           ds.systemFlags[i].set("posLatch",false);
+        }
+      }
+    }
+
+    // ExtCh block shared among ops
+    if (ds.version<252) {
+      for (int i=0; i<ds.systemLen; i++) {
+        if (ds.system[i]==DIV_SYSTEM_YM2612_EXT ||
+            ds.system[i]==DIV_SYSTEM_YM2612_DUALPCM_EXT ||
+            ds.system[i]==DIV_SYSTEM_YM2610_FULL_EXT ||
+            ds.system[i]==DIV_SYSTEM_YM2610B_EXT ||
+            ds.system[i]==DIV_SYSTEM_YM2203_EXT ||
+            ds.system[i]==DIV_SYSTEM_YM2608_EXT ||
+            ds.system[i]==DIV_SYSTEM_YM2612_CSM ||
+            ds.system[i]==DIV_SYSTEM_YM2203_CSM ||
+            ds.system[i]==DIV_SYSTEM_YM2608_CSM ||
+            ds.system[i]==DIV_SYSTEM_YM2610_CSM ||
+            ds.system[i]==DIV_SYSTEM_YM2610B_CSM) {
+          ds.systemFlags[i].set("sharedExtBlock",true);
+        }
+      }
+    }
+
+    // C64 old cutoff macro logic
+    if (ds.version<253) {
+      for (int i=0; i<ds.systemLen; i++) {
+        if (ds.system[i]==DIV_SYSTEM_C64_8580 ||
+            ds.system[i]==DIV_SYSTEM_C64_6581 ||
+            ds.system[i]==DIV_SYSTEM_C64_PCM) {
+          ds.systemFlags[i].set("filterOld",true);
+        }
+      }
+    }
+
+    // SAA1099 env mode compat
+    if (ds.version<257) {
+      for (int i=0; i<ds.systemLen; i++) {
+        if (ds.system[i]==DIV_SYSTEM_SAA1099 || ds.system[i]==DIV_SYSTEM_SAA1099_NEW) {
+          ds.systemFlags[i].set("envCombine",false);
+        }
+      }
+    }
+
+    // POKEY AUDCTL compat
+    if (ds.version<258) {
+      for (int i=0; i<ds.systemLen; i++) {
+        if (ds.system[i]==DIV_SYSTEM_POKEY) {
+          ds.systemFlags[i].set("audctlCombine",false);
         }
       }
     }

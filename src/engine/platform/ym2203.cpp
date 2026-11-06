@@ -1165,6 +1165,9 @@ int DivPlatformYM2203::dispatch(DivCommand c) {
       if (c.chan>=psgChanOffs) break;
       chan[c.chan].hardReset=c.value;
       break;
+    case DIV_CMD_TEST_REG:
+      rWrite(c.value,c.value2);
+      break;
     case DIV_CMD_MACRO_OFF:
       chan[c.chan].std.mask(c.value,true);
       break;
@@ -1285,11 +1288,30 @@ void DivPlatformYM2203::poke(std::vector<DivRegWrite>& wlist) {
   for (DivRegWrite& i: wlist) immWrite(i.addr,i.val);
 }
 
+void DivPlatformYM2203::softReset() {
+  // reset AY
+  immWrite(7,0x3f);
+  immWrite(8,0);
+  immWrite(9,0);
+  immWrite(10,0);
+
+  // reset OPN
+  for (int i=0; i<3; i++) { // set SL and RR to highest
+    immWrite(0x80+i,0xff);
+    immWrite(0x84+i,0xff);
+    immWrite(0x88+i,0xff);
+    immWrite(0x8c+i,0xff);
+  }
+  for (int i=0; i<3; i++) { // note off
+    immWrite(0x28,i);
+  }
+}
+
 void DivPlatformYM2203::reset() {
   writes.clear();
   memset(regPool,0,256);
   if (dumpWrites) {
-    addWrite(0xffffffff,0);
+    softReset();
   }
   OPN2_Reset(&fm_nuked);
   OPN2_SetChipType(&fm_nuked,ym3438_mode_opn);
@@ -1457,6 +1479,7 @@ void DivPlatformYM2203::setFlags(const DivConfig& flags) {
   }
   CHECK_CUSTOM_CLOCK;
   noExtMacros=flags.getBool("noExtMacros",false);
+  sharedExtBlock=flags.getBool("sharedExtBlock",false);
   fbAllOps=flags.getBool("fbAllOps",false);
   ssgVol=flags.getInt("ssgVol",128);
   fmVol=flags.getInt("fmVol",256);

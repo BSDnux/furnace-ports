@@ -26,6 +26,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include "../engine/bsr.h"
 
 PendingDrawOsc _debugDo;
 static float oscDebugData[2048];
@@ -43,6 +44,14 @@ static int ptDebugChan=0;
 static int disDebugChan=0;
 static bool disMultiChannel=false;
 static float rotAngle=0.0f;
+
+static int gcdArg0=0;
+static int gcdArg1=0;
+static int gcdOutput=0;
+static int lcmOutput=0;
+
+static int globalRegDispatch=0;
+static int globalRegIndex=0;
 
 static void _drawOsc(const ImDrawList* drawList, const ImDrawCmd* cmd) {
   if (cmd!=NULL) {
@@ -424,6 +433,49 @@ void FurnaceGUI::drawDebug() {
 
       ImGui::TreePop();
     }
+    if (ImGui::TreeNode("Global Register Debug")) {
+      ImGui::SliderInt("Dispatch",&globalRegDispatch,0,e->song.systemLen-1);
+      ImGui::InputInt("Register Index",&globalRegIndex,1,1);
+
+      DivDispatch* d=e->getDispatch(globalRegDispatch);
+      if (d==NULL) {
+        ImGui::Text("What the actual FUCK is wrong with you.");
+      } else {
+        ImGui::Text("%s",e->getSystemName(e->song.system[globalRegDispatch]));
+        DivGlobalRegState* regState=d->getGlobalRegState(globalRegIndex);
+        if (regState==NULL) {
+          ImGui::Text("You might wanna think about that one for a moment...");
+        } else {
+          ImGui::Text("- name: %s",regState->name);
+          ImGui::Text("- type: %d",regState->type);
+          ImGui::Text("- bits: %d",regState->bits);
+          ImGui::Text("- combine: %s",regState->combine?"yes":"no");
+          ImGui::Text("- value: %.8x",regState->val);
+          if (regState->bits>0) {
+            ImGui::Text("- bit names/icons:");
+            ImGui::Indent();
+            for (int i=0; i<regState->bits; i++) {
+              ImGui::Text("- %d: %s (%s)",i,_(regState->bitName[i]),regState->bitIcon[i]);
+            }
+            ImGui::Unindent();
+          } else {
+            ImGui::Text("- no bits");
+          }
+          if (regState->chanVal.empty()) {
+            ImGui::Text("- no channel state");
+          } else {
+            ImGui::Text("- channel state:");
+            ImGui::Indent();
+            for (size_t i=0; i<regState->chanVal.size(); i++) {
+              ImGui::Text("- %d: %.8x",(int)i,regState->chanVal[i]);
+            }
+            ImGui::Unindent();
+          }
+          ImGui::Text("effective channel: %d",regState->effectiveChan);
+        }
+      }
+      ImGui::TreePop();
+    }
     if (ImGui::TreeNode("Playback Status")) {
       String pdi=e->getPlaybackDebugInfo();
       ImGui::TextWrapped("%s",pdi.c_str());
@@ -703,6 +755,25 @@ void FurnaceGUI::drawDebug() {
           continue;
         }
       }
+      ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("GCD")) {
+      ImGui::InputInt("Arg0",&gcdArg0);
+      ImGui::InputInt("Arg1",&gcdArg1);
+      if (ImGui::Button("Calculate")) {
+        gcdOutput=gcd2(gcdArg0,gcdArg1);
+        if (gcdOutput<1) {
+          lcmOutput=0;
+        } else {
+          lcmOutput=(gcdArg0*gcdArg1)/gcdOutput;
+        }
+      }
+      if (gcdArg0>65535 || gcdArg1>65535) {
+        ImGui::SameLine();
+        ImGui::Text("please don't...");
+      }
+      ImGui::Text("GCD: %d",gcdOutput);
+      ImGui::Text("LCM: %d",lcmOutput);
       ImGui::TreePop();
     }
     if (ImGui::TreeNode("Touch Point Information")) {

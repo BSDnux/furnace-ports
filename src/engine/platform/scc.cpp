@@ -267,6 +267,14 @@ int DivPlatformSCC::dispatch(DivCommand c) {
     case DIV_CMD_GET_VOLMAX:
       return 15;
       break;
+    case DIV_CMD_TEST_REG: {
+      if (isPlus) {
+        rWrite(regBase+32,c.value2); 
+       } else {
+        rWrite(regBase+96,c.value2);
+      }
+      break;
+    }
     case DIV_CMD_MACRO_OFF:
       chan[c.chan].std.mask(c.value,true);
       break;
@@ -328,6 +336,10 @@ int DivPlatformSCC::getRegisterPoolSize() {
   return 225;
 }
 
+void DivPlatformSCC::softReset() {
+  rWrite(regBase+15,0);
+}
+
 void DivPlatformSCC::reset() {
   memset(regPool,0,225);
   scc->reset();
@@ -342,7 +354,7 @@ void DivPlatformSCC::reset() {
     rWrite(regBase+10+i,15);
   }
   if (dumpWrites) {
-    addWrite(0xffffffff,0);
+    softReset();
   }
   lastUpdated34=0;
 }

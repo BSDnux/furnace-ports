@@ -350,6 +350,8 @@ enum DivDispatchCmds {
   DIV_CMD_KLATTSCH_BW_SCALE,
   DIV_CMD_KLATTSCH_FORMANT_SHIFT,
 
+  DIV_CMD_TEST_REG, // (register, value)
+
   DIV_CMD_MAX
 };
 
@@ -686,6 +688,8 @@ class DivPitchTableManager {
 
       bool hasSizeChanged=false;
 
+      logD("DivPitchTableManager update (%d channels) - sample %d",(int)numChans,sample);
+
       // first check whether we need to resize our pitch table array
       if (samplePitchTableLen!=eSongSampleSize()) {
         if (eSongSampleSize()<1) {
@@ -709,15 +713,26 @@ class DivPitchTableManager {
           DivPitchTable* newArray=new DivPitchTable[eSongSampleSize()];
           if (samplePitchTable) {
             // I know, I know. we only create DivPitchTables though.
-            memcpy((void*)newArray,(void*)samplePitchTable,MIN(eSongSampleSize(),samplePitchTableLen)*sizeof(DivPitchTable));
+            for (size_t i=0; i<MIN(eSongSampleSize(),samplePitchTableLen); i++) {
+              newArray[i]=samplePitchTable[i];
+            }
 
             // adjust pitch table references
             DivPitchTable* firstEntry=samplePitchTable;
             DivPitchTable* lastEntry=&samplePitchTable[samplePitchTableLen-1];
+            
+            logD("firstEntry: %p - lastEntry: %p",(void*)firstEntry,(void*)lastEntry);
 
             for (size_t i=0; i<numChans; i++) {
               if (chan[i].pitchTable>=firstEntry && chan[i].pitchTable<=lastEntry) {
-                chan[i].pitchTable=newArray+(chan[i].pitchTable-firstEntry);
+                size_t offset=(chan[i].pitchTable-firstEntry);
+                logD("- chan %d: %p (offset %d)",i,(void*)chan[i].pitchTable,(int)offset);
+                if (offset<eSongSampleSize()) {
+                  chan[i].pitchTable=&newArray[offset];
+                } else {
+                  logW("one item is gone");
+                  chan[i].pitchTable=NULL;
+                }
               }
             }
 
@@ -844,7 +859,6 @@ struct DivRegWrite {
    * - 0xffffxx05: set sample position
    *   - xx is the instance ID
    *   - value is the sample position
-   * - 0xffffffff: reset
    * - 0xfffffffe: add delay
    *   - value is the delay in cycles
    */
@@ -1102,6 +1116,48 @@ struct DivChannelModeHints {
 };
 
 /**
+ * this struct provides a mechanism for the display of global register state.
+ * it also allows displaying each channel's last global register setting, and
+ * which channel's setting is taking effect.
+ */
+struct DivGlobalRegState {
+  // the global register's name.
+  const char* name;
+  // the global register's value,
+  unsigned int val;
+  // the global register's type.
+  // valid values are the same as DivChannelModeHints::type.
+  unsigned char type;
+  // whether each channel's settings are OR'ed together to form the actual register value.
+  bool combine;
+  // number of bits in this register (0-32).
+  // if it is zero, only the effective channel marker will be displayed.
+  unsigned char bits;
+  // a name for each bit.
+  const char* bitName[32];
+  // an icon for each bit.
+  const char* bitIcon[32];
+  // the channel which set the register last (in non-combine mode).
+  int effectiveChan;
+  // the last value of each channel's attempt to set a global register.
+  // the size of this vector should be zero, or equal to the number of channels!
+  // if it is zero, the GUI won't display per-channel state.
+  std::vector<unsigned int> chanVal;
+  DivGlobalRegState():
+    name(NULL),
+    val(0),
+    type(0),
+    combine(false),
+    bits(8),
+    effectiveChan(-1) {
+    for (int i=0; i<32; i++) {
+      bitName[i]=NULL;
+      bitIcon[i]=NULL;
+    }
+  }
+};
+
+/**
  * this enum describe possible types for memory entries in a memory composition struct.
  */
 enum DivMemoryEntryType {
@@ -1260,6 +1316,12 @@ class DivDispatch {
     virtual void fillStream(std::vector<DivDelayedWrite>& stream, int sRate, size_t len);
 
     /**
+     * issue register writes that cause a soft-reset.
+     * used in register dump exports.
+     */
+    virtual void softReset();
+
+    /**
      * send a command to this dispatch.
      * @param c a DivCommand.
      * @return a return value which varies depending on the command.
@@ -1312,6 +1374,12 @@ class DivDispatch {
      */
     virtual DivChannelModeHints getModeHints(int chan);
 
+    /**
+     * get global register state.
+     * @param index the global register's index.
+     * @return a DivGlobalRegState, or NULL if the index is higher than the number of global registers.
+     */
+    virtual DivGlobalRegState* getGlobalRegState(unsigned int index=0);
 
     /**
      * get currently playing sample (and its position).
@@ -1546,6 +1614,20 @@ class DivDispatch {
      * @return an array of C strings, terminated by NULL; or NULL if none available.
      */
     virtual const char** getRegisterSheet();
+
+    /**
+     * get the sample group of specific channel.
+     * @param chan the channel.
+     * @return the sample group of channel. Default value is 0
+     */
+    virtual int getSampleGroup(int chan=0);
+
+    /**
+     * get a maximum allowed number of samples.
+     * @param index the memory index.
+     * @return a maximum allowed number of samples, or 0 if memory doesn't exist.
+     */
+    virtual int getMaxSamples(int index=0);
 
     /**
      * Get sample memory buffer.

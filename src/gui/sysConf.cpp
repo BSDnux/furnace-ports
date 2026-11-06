@@ -46,6 +46,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
       }
       int interruptSimCycles=flags.getInt("interruptSimCycles",0);
       bool noExtMacros=flags.getBool("noExtMacros",false);
+      bool sharedExtBlock=flags.getBool("sharedExtBlock",false);
       bool fbAllOps=flags.getBool("fbAllOps",false);
       bool msw=flags.getBool("msw",false);
 
@@ -96,6 +97,9 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
         if (ImGui::Checkbox(_("Ins change in ExtCh operator 2-4 affects FB (compatibility)"),&fbAllOps)) {
           altered=true;
         }
+        if (ImGui::Checkbox(_("Block is shared among ExtCh ops (compatibility)"),&sharedExtBlock)) {
+          altered=true;
+        }
       }
 
       if (msw || settings.mswEnabled) {
@@ -116,6 +120,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
           flags.set("clockSel",clockSel);
           flags.set("chipType",chipType);
           flags.set("noExtMacros",noExtMacros);
+          flags.set("sharedExtBlock",sharedExtBlock);
           flags.set("fbAllOps",fbAllOps);
           flags.set("msw",msw);
           flags.set("interruptSimCycles",interruptSimCycles);
@@ -714,6 +719,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
       bool no1EUpdate=flags.getBool("no1EUpdate",false);
       bool multiplyRel=flags.getBool("multiplyRel",false);
       bool macroRace=flags.getBool("macroRace",false);
+      bool filterOld=flags.getBool("filterOld",false);
       int testAttack=flags.getInt("testAttack",0);
       int testDecay=flags.getInt("testDecay",0);
       int testSustain=flags.getInt("testSustain",0);
@@ -799,6 +805,11 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
         altered=true;
       }
 
+  
+      if (ImGui::Checkbox(_("Use old cutoff macro implementation (compatibility)"),&filterOld)) {
+        altered=true;
+      }
+
 
       if (altered) {
         e->lockSave([&]() {
@@ -807,6 +818,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
           flags.set("no1EUpdate",no1EUpdate);
           flags.set("multiplyRel",multiplyRel);
           flags.set("macroRace",macroRace);
+          flags.set("filterOld",filterOld);
           flags.set("testAttack",testAttack);
           flags.set("testDecay",testDecay);
           flags.set("testSustain",testSustain);
@@ -824,6 +836,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
     case DIV_SYSTEM_YM2610B_CSM: {
       int clockSel=flags.getInt("clockSel",0);
       bool noExtMacros=flags.getBool("noExtMacros",false);
+      bool sharedExtBlock=flags.getBool("sharedExtBlock",false);
       bool fbAllOps=flags.getBool("fbAllOps",false);
       int ssgVol=flags.getInt("ssgVol",128);
       int fmVol=flags.getInt("fmVol",256);
@@ -846,6 +859,9 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
         if (ImGui::Checkbox(_("Ins change in ExtCh operator 2-4 affects FB (compatibility)"),&fbAllOps)) {
           altered=true;
         }
+        if (ImGui::Checkbox(_("Block is shared among ExtCh ops (compatibility)"),&sharedExtBlock)) {
+          altered=true;
+        }
       }
 
       if (CWSliderInt(_("SSG Volume"),&ssgVol,0,256)) {
@@ -864,6 +880,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
         e->lockSave([&]() {
           flags.set("clockSel",clockSel);
           flags.set("noExtMacros",noExtMacros);
+          flags.set("sharedExtBlock",sharedExtBlock);
           flags.set("fbAllOps",fbAllOps);
           flags.set("ssgVol",ssgVol);
           flags.set("fmVol",fmVol);
@@ -1011,8 +1028,11 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
       }
       break;
     }
-    case DIV_SYSTEM_SAA1099: {
+    case DIV_SYSTEM_SAA1099:
+    case DIV_SYSTEM_SAA1099_NEW: {
       int clockSel=flags.getInt("clockSel",0);
+      int timerRate=flags.getInt("timerRate",15625);
+      bool envCombine=flags.getInt("envCombine",true);
 
       ImGui::Text(_("Clock rate:"));
       ImGui::Indent();
@@ -1030,9 +1050,37 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
       }
       ImGui::Unindent();
 
+      if (type==DIV_SYSTEM_SAA1099_NEW) {
+        if (ImGui::InputInt(_("Software timer resolution##TimerRate"),&timerRate,10,1000)) {
+          if (timerRate<10) timerRate=10;
+          if (timerRate>125000) timerRate=125000;
+          altered=true;
+        }
+        ImGui::SetItemTooltip(_("15625Hz = PAL HBlank"));
+        ImGui::TextUnformatted(_("Maximum timer waveform frequencies:"));
+        ImGui::Text(_("- saw: %dHz (high-res)/%dHz (low-res)"),timerRate/16,timerRate/8);
+        ImGui::Text(_("- triangle: %dHz (high-res)/%dHz (low-res)"),timerRate/32,timerRate/16);
+      }
+
+      ImGui::Text(_("Envelope mode is altered by:"));
+      ImGui::Indent();
+      if (ImGui::RadioButton(_("All channels in a group (combining/OR'ing env mode macros/effects)"),envCombine)) {
+        envCombine=true;
+        altered=true;
+      }
+      if (ImGui::RadioButton(_("Last channel in a group with an env mode macro or effect"),!envCombine)) {
+        envCombine=false;
+        altered=true;
+      }
+      ImGui::Unindent();
+
       if (altered) {
         e->lockSave([&]() {
           flags.set("clockSel",clockSel);
+          if (type==DIV_SYSTEM_SAA1099_NEW) {
+            flags.set("timerRate",timerRate);
+          }
+          flags.set("envCombine",envCombine);
         });
       }
       break;
@@ -1202,6 +1250,34 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
           flags.set("clockSel",clockSel);
           flags.set("speakerType",speakerType);
           flags.set("resetPhase",resetPhase);
+        });
+      }
+      break;
+    }
+    case DIV_SYSTEM_POKEY: {
+      bool sysPal=flags.getInt("clockSel",0);
+      bool audctlCombine=flags.getBool("audctlCombine",true);
+
+      if (ImGui::Checkbox(_("PAL"),&sysPal)) {
+        altered=true;
+      }
+
+      ImGui::Text(_("AUDCTL is set by:"));
+      ImGui::Indent();
+      if (ImGui::RadioButton(_("Combining all channels' AUDCTL macro/effect values"),audctlCombine)) {
+        audctlCombine=true;
+        altered=true;
+      }
+      if (ImGui::RadioButton(_("Last channel which sets it"),!audctlCombine)) {
+        audctlCombine=false;
+        altered=true;
+      }
+      ImGui::Unindent();
+
+      if (altered) {
+        e->lockSave([&]() {
+          flags.set("clockSel",(int)sysPal);
+          flags.set("audctlCombine",audctlCombine);
         });
       }
       break;
@@ -1412,6 +1488,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
       int clockSel=flags.getInt("clockSel",0);
       int prescale=flags.getInt("prescale",0);
       bool noExtMacros=flags.getBool("noExtMacros",false);
+      bool sharedExtBlock=flags.getBool("sharedExtBlock",false);
       bool fbAllOps=flags.getBool("fbAllOps",false);
       int ssgVol=flags.getInt("ssgVol",128);
       int fmVol=flags.getInt("fmVol",256);
@@ -1478,6 +1555,9 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
         if (ImGui::Checkbox(_("Ins change in ExtCh operator 2-4 affects FB (compatibility)"),&fbAllOps)) {
           altered=true;
         }
+        if (ImGui::Checkbox(_("Block is shared among ExtCh ops (compatibility)"),&sharedExtBlock)) {
+          altered=true;
+        }
       }
 
       if (altered) {
@@ -1485,6 +1565,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
           flags.set("clockSel",clockSel);
           flags.set("prescale",prescale);
           flags.set("noExtMacros",noExtMacros);
+          flags.set("sharedExtBlock",sharedExtBlock);
           flags.set("fbAllOps",fbAllOps);
           flags.set("ssgVol",ssgVol);
           flags.set("fmVol",fmVol);
@@ -1498,6 +1579,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
       int clockSel=flags.getInt("clockSel",0);
       int prescale=flags.getInt("prescale",0);
       bool noExtMacros=flags.getBool("noExtMacros",false);
+      bool sharedExtBlock=flags.getBool("sharedExtBlock",false);
       bool fbAllOps=flags.getBool("fbAllOps",false);
       bool memROM=flags.getBool("memROM",false);
       bool memParallel=flags.getBool("memParallel",true);
@@ -1579,6 +1661,9 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
         if (ImGui::Checkbox(_("Ins change in ExtCh operator 2-4 affects FB (compatibility)"),&fbAllOps)) {
           altered=true;
         }
+        if (ImGui::Checkbox(_("Block is shared among ExtCh ops (compatibility)"),&sharedExtBlock)) {
+          altered=true;
+        }
       }
 
       if (altered) {
@@ -1586,6 +1671,7 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
           flags.set("clockSel",clockSel);
           flags.set("prescale",prescale);
           flags.set("noExtMacros",noExtMacros);
+          flags.set("sharedExtBlock",sharedExtBlock);
           flags.set("fbAllOps",fbAllOps);
           flags.set("memROM",memROM);
           flags.set("memParallel",memParallel);
@@ -2076,6 +2162,24 @@ bool FurnaceGUI::drawSysConf(int chan, int sysPos, DivSystem type, DivConfig& fl
           flags.set("interpolation",interpolation);
           flags.set("volMax",volMax);
           flags.set("volMult",volMult);
+        });
+      }
+      break;
+    }
+    case DIV_SYSTEM_DUMMY: {
+      supportsCustomRate=false;
+      int volMax=flags.getInt("volMax",15);
+
+      ImGui::Text(_("Maximum volume:"));
+      if (CWSliderInt("##VolMax",&volMax,1,255)) {
+        if (volMax<1) volMax=1;
+        if (volMax>255) volMax=255;
+        altered=true;
+      } rightClickable
+
+      if (altered) {
+        e->lockSave([&]() {
+          flags.set("volMax",volMax);
         });
       }
       break;
