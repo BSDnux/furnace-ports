@@ -1661,6 +1661,9 @@ int DivPlatformYM2610B::dispatch(DivCommand c) {
       if (c.chan>=psgChanOffs) break;
       chan[c.chan].hardReset=c.value;
       break;
+    case DIV_CMD_TEST_REG:
+      rWrite(c.value,c.value2);
+      break;
     case DIV_CMD_MACRO_OFF:
       chan[c.chan].std.mask(c.value,true);
       break;
@@ -1797,7 +1800,7 @@ void DivPlatformYM2610B::reset() {
   writes.clear();
   memset(regPool,0,512);
   if (dumpWrites) {
-    addWrite(0xffffffff,0);
+    softReset();
   }
   fm->reset();
   for (int i=0; i<16; i++) {
