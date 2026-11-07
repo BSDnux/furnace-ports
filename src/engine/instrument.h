@@ -102,6 +102,7 @@ enum DivInstrumentType: unsigned short {
   DIV_INS_UPD1771C=65,
   DIV_INS_SID3=66,
   DIV_INS_KLATTSCH=67,
+  DIV_INS_RF5C400=69,
   DIV_INS_MAX,
   DIV_INS_NULL
 };
@@ -167,12 +168,11 @@ enum DivMacroTypeOp: unsigned char {
 //   - AM, AR, DR, MULT, RR, SL, TL, SSG-EG&8 = EG-S
 //   - KSL, VIB, WS (OPL2/3), KSR
 // - OPZ:
-//   - AM, AR, DR, MULT (CRS), RR, SL, TL, DT2, RS, DT, D2R, SSG-EG = TS (tremolo sensitivity)
+//   - AM, AR, DR, MULT (CRS), RR, SL, TL, DT2, RS, DT, D2R
 //   - WS, DVB = MULT (FINE), DAM = REV, KSL = EGShift, EGT = Fixed, KSR = TL Ramp
 
 struct DivInstrumentFM {
-  unsigned char alg, fb, fms, ams, ops, opllPreset, block;
-  bool fmsLFO, amsLFO, tremLFO;
+  unsigned char alg, fb, fms, ams, fms2, ams2, ops, opllPreset, block;
   bool fixedDrums;
   unsigned short kickFreq, snareHatFreq, tomTopFreq;
 
@@ -219,12 +219,11 @@ struct DivInstrumentFM {
     fb(0),
     fms(0),
     ams(0),
+    fms2(0),
+    ams2(0),
     ops(2),
     opllPreset(0),
     block(0),
-    fmsLFO(false),
-    amsLFO(false),
-    tremLFO(false),
     fixedDrums(false),
     kickFreq(0x520),
     snareHatFreq(0x550),
