@@ -57,15 +57,21 @@ for other operating systems, you may [build the source](#developer-info).
     - Amiga
     - SegaPCM - all 16 channels
     - Capcom QSound
+    - BSMT2000
     - Yamaha YMZ280B (PCMD8)
     - Ricoh RF5C68 used in Sega CD and FM Towns
     - OKI MSM6258 and MSM6295
     - Konami K007232
     - Konami K053260
+    - Konami K054539
     - Irem GA20
+    - Ensoniq ES5504
+    - Ensoniq ES5505
     - Ensoniq ES5506
     - Namco C140
     - Namco C219
+    - Namco C352
+    - Zoom ZSG-2
   - wavetable chips:
     - HuC6280 used in PC Engine
     - Konami Bubble System WSG
