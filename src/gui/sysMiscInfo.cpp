@@ -185,6 +185,9 @@ const char* FurnaceGUI::getSystemPartNumber(DivSystem sys, DivConfig& flags) {
       }
       break;
     }
+    case DIV_SYSTEM_RF5C400:
+      return "RF5C400";
+      break;
     case DIV_SYSTEM_OPZ:
       return "YM2414";
       break;
