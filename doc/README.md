@@ -19,6 +19,7 @@ the index follows.
 ## authors
 
 - brickblock369
+- BSDnux
 - cam900
 - DeMOSic
 - Electric Keet
